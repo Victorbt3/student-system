@@ -7,15 +7,25 @@ class Config:
     # Base directory
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     
-    # Database Configuration (SQLite default fallback, toggle to MySQL easily)
-    # To use MySQL: mysql+pymysql://username:password@localhost/db_name
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(BASE_DIR, 'attendance.db')
+    # Vercel Environment Detection
+    IS_VERCEL = os.environ.get('VERCEL') == '1'
+    
+    # Database Configuration
+    if IS_VERCEL:
+        default_db_path = 'sqlite:////tmp/attendance.db'
+    else:
+        default_db_path = 'sqlite:///' + os.path.join(BASE_DIR, 'attendance.db')
+        
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or default_db_path
         
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Upload Configurations
-    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+    if IS_VERCEL:
+        UPLOAD_FOLDER = '/tmp/uploads'
+    else:
+        UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+        
     PROFILE_FOLDER = os.path.join(UPLOAD_FOLDER, 'profile_pics')
     DATASET_FOLDER = os.path.join(UPLOAD_FOLDER, 'face_dataset')
     

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Attendance System — Select Portal</title>
+  <meta name="description" content="Smart Student Attendance System Using Facial Recognition — University Portal Selection">
+  <link rel="icon" type="image/png" href="https://img.icons8.com/color/48/facial-recognition.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .landing-wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Animated background orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      animation: floatOrb 8s ease-in-out infinite;
+    }
+    .orb-1 { width: 400px; height: 400px; background: rgba(37,99,235,0.2); top: -100px; left: -100px; animation-delay: 0s; }
+    .orb-2 { width: 350px; height: 350px; background: rgba(124,58,237,0.2); bottom: -80px; right: -80px; animation-delay: -3s; }
+    .orb-3 { width: 300px; height: 300px; background: rgba(5,150,105,0.15); top: 40%; left: 30%; animation-delay: -5s; }
+    @keyframes floatOrb {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -20px) scale(1.05); }
+      66% { transform: translate(-20px, 30px) scale(0.95); }
+    }
+    .landing-content { position: relative; z-index: 1; width: 100%; max-width: 1000px; }
+    .hero-title { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(37,99,235,0.2); border: 1px solid rgba(56,189,248,0.3);
+      padding: 6px 16px; border-radius: 999px; font-size: 0.8rem; color: #38bdf8;
+      margin-bottom: 24px;
+    }
+    .portal-card { cursor: pointer; text-decoration: none; color: inherit; display: block; }
+    .portal-card:hover { color: inherit; }
+    .portal-card .glass-panel {
+      text-align: center; padding: 40px 24px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    .portal-card:hover .glass-panel {
+      transform: translateY(-8px);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    }
+    .portal-card.admin:hover .glass-panel { border-color: rgba(56,189,248,0.5); box-shadow: 0 24px 60px rgba(37,99,235,0.3); }
+    .portal-card.lecturer:hover .glass-panel { border-color: rgba(167,139,250,0.5); box-shadow: 0 24px 60px rgba(124,58,237,0.3); }
+    .portal-card.student:hover .glass-panel { border-color: rgba(52,211,153,0.5); box-shadow: 0 24px 60px rgba(5,150,105,0.3); }
+    .portal-icon-wrap {
+      width: 80px; height: 80px; border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px; font-size: 2rem;
+    }
+    .icon-admin { background: linear-gradient(135deg, rgba(37,99,235,0.3), rgba(56,189,248,0.2)); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; }
+    .icon-lecturer { background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(167,139,250,0.2)); border: 1px solid rgba(167,139,250,0.3); color: #a78bfa; }
+    .icon-student { background: linear-gradient(135deg, rgba(5,150,105,0.3), rgba(52,211,153,0.2)); border: 1px solid rgba(52,211,153,0.3); color: #34d399; }
+    .tech-strip {
+      display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+      margin-top: 40px; opacity: 0.6;
+    }
+    .tech-tag {
+      padding: 4px 12px; border-radius: 6px; font-size: 0.75rem;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="landing-wrapper">
+    <div class="landing-content text-center">
+      <div class="hero-badge">
+        <i class="fa-solid fa-microchip-ai"></i>
+        AI-Powered · Real-Time · University Grade
+      </div>
+      <h1 class="hero-title">
+        <span class="text-gradient">Smart Student</span><br>
+        Attendance System
+      </h1>
+      <p class="text-muted mb-5 fs-6" style="max-width: 520px; margin: 0 auto;">
+        Powered by OpenCV Facial Recognition, Flask, and intelligent AI analytics.
+        Select your portal to get started.
+      </p>
+
+      <div class="row g-4 mb-5">
+        <!-- Admin Portal -->
+        <div class="col-md-4">
+          <a href="{{ url_for('auth.login') }}?role=admin" class="portal-card admin">
+            <div class="glass-panel">
+              <div class="portal-icon-wrap icon-admin">
+                <i class="fa-solid fa-user-shield"></i>
+              </div>
+              <h3 class="fs-5 mb-2">Admin Portal</h3>
+              <p class="text-muted small mb-3">Manage students, lecturers, courses and view system-wide analytics.</p>
+              <span class="btn btn-custom btn-primary-gradient px-4 py-2 small">Enter as Admin →</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Lecturer Portal -->
+        <div class="col-md-4">
+          <a href="{{ url_for('auth.login') }}?role=lecturer" class="portal-card lecturer">
+            <div class="glass-panel">
+              <div class="portal-icon-wrap icon-lecturer">
+                <i class="fa-solid fa-chalkboard-user"></i>
+              </div>
+              <h3 class="fs-5 mb-2">Lecturer Portal</h3>
+              <p class="text-muted small mb-3">Start attendance sessions, scan faces, view records and export reports.</p>
+              <span class="btn btn-custom btn-secondary-gradient px-4 py-2 small">Enter as Lecturer →</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Student Portal -->
+        <div class="col-md-4">
+          <a href="{{ url_for('auth.login') }}?role=student" class="portal-card student">
+            <div class="glass-panel">
+              <div class="portal-icon-wrap icon-student">
+                <i class="fa-solid fa-user-graduate"></i>
+              </div>
+              <h3 class="fs-5 mb-2">Student Portal</h3>
+              <p class="text-muted small mb-3">Register your face, check attendance history and view AI early warnings.</p>
+              <span class="btn btn-custom px-4 py-2 small" style="background: var(--success-gradient); color:#fff;">Enter as Student →</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Tech Strip -->
+      <div class="tech-strip">
+        <span class="tech-tag"><i class="fa-brands fa-python me-1"></i> Python Flask</span>
+        <span class="tech-tag"><i class="fa-solid fa-eye me-1"></i> OpenCV</span>
+        <span class="tech-tag"><i class="fa-solid fa-database me-1"></i> SQLite / MySQL</span>
+        <span class="tech-tag"><i class="fa-solid fa-chart-area me-1"></i> Chart.js</span>
+        <span class="tech-tag"><i class="fa-solid fa-brain me-1"></i> LBPH Recognizer</span>
+        <span class="tech-tag"><i class="fa-solid fa-bootstrap me-1"></i> Bootstrap 5</span>
+      </div>
+
+      <p class="text-muted small mt-4" style="opacity:0.4;">
+        Final Year CS Project · University of Technology · 2026
+      </p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

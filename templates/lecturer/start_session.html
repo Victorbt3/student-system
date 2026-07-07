@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Start Attendance Session{% endblock %}
+{% block header_title %}<i class="fa-solid fa-camera me-2"></i>Start Attendance Session{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="glass-panel">
+      <div class="text-center mb-4">
+        <div style="width:72px;height:72px;border-radius:20px;background:var(--success-gradient);display:inline-flex;align-items:center;justify-content:center;font-size:2rem;margin-bottom:16px;box-shadow:var(--glass-glow-green);">
+          <i class="fa-solid fa-camera-rotate text-white"></i>
+        </div>
+        <h4 class="mb-1">Start Attendance Scan</h4>
+        <p class="text-muted small">Select a course to activate the facial recognition camera scanner</p>
+      </div>
+
+      <form method="POST" action="{{ url_for('lecturer.start_session') }}">
+        <div class="mb-4">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-book-open me-1 text-muted"></i> Select Course</label>
+          {% if courses %}
+          <select name="course_id" class="form-select form-glass" required>
+            <option value="" disabled selected>Choose a course...</option>
+            {% for course in courses %}
+            <option value="{{ course.id }}">{{ course.course_code }} — {{ course.course_title }} ({{ course.students|length }} students)</option>
+            {% endfor %}
+          </select>
+          <p class="text-muted small mt-2"><i class="fa-solid fa-circle-info me-1"></i> The session will start immediately after clicking the button below.</p>
+          {% else %}
+          <div class="alert py-3 px-4 rounded-3" style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);color:#fbbf24;">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+            No courses assigned to you yet. Please contact the administrator.
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Info Cards -->
+        <div class="row g-3 mb-4">
+          <div class="col-4 text-center">
+            <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:12px;padding:16px 8px;">
+              <i class="fa-solid fa-eye fa-lg mb-2" style="color:#38bdf8;"></i>
+              <p class="text-muted mb-0" style="font-size:0.7rem;">Face Detection</p>
+              <p class="text-white mb-0 small fw-semibold">Haar Cascade</p>
+            </div>
+          </div>
+          <div class="col-4 text-center">
+            <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:12px;padding:16px 8px;">
+              <i class="fa-solid fa-brain fa-lg mb-2" style="color:#34d399;"></i>
+              <p class="text-muted mb-0" style="font-size:0.7rem;">Recognition</p>
+              <p class="text-white mb-0 small fw-semibold">LBPH Model</p>
+            </div>
+          </div>
+          <div class="col-4 text-center">
+            <div style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.2);border-radius:12px;padding:16px 8px;">
+              <i class="fa-solid fa-database fa-lg mb-2" style="color:#a78bfa;"></i>
+              <p class="text-muted mb-0" style="font-size:0.7rem;">Auto Record</p>
+              <p class="text-white mb-0 small fw-semibold">Real-Time DB</p>
+            </div>
+          </div>
+        </div>
+
+        {% if courses %}
+        <button type="submit" class="btn btn-custom w-100 py-3" style="background:var(--success-gradient);color:#fff;font-size:1rem;">
+          <i class="fa-solid fa-play me-2"></i>Launch Attendance Scanner
+        </button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

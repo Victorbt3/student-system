@@ -1,0 +1,15 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    image: student-attendance-system
+    ports:
+      - '5000:5000'
+    environment:
+      - SECRET_KEY=secret-key-for-local
+      - DATABASE_URL=sqlite:///attendance.db
+    volumes:
+      - .:/app
+      - ./static/uploads:/app/static/uploads
+    command: gunicorn app:app --bind 0.0.0.0:5000 --workers 2

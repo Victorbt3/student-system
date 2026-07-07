@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Live Attendance Scan — {{ session.course.course_code }}{% endblock %}
+{% block header_title %}
+  <span style="width:10px;height:10px;background:#34d399;border-radius:50%;display:inline-block;animation:livePulse 1.5s infinite;margin-right:8px;"></span>
+  Live Scan — {{ session.course.course_code }}
+{% endblock %}
+
+{% block styles %}
+<style>
+  @keyframes livePulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(52,211,153,0.4)} 50%{opacity:0.7;box-shadow:0 0 0 8px transparent} }
+  .face-box {
+    position: absolute;
+    border: 2px solid #34d399;
+    border-radius: 8px;
+    box-shadow: 0 0 12px rgba(52,211,153,0.5);
+    pointer-events: none;
+  }
+  .face-label {
+    position: absolute;
+    bottom: -24px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #34d399;
+    white-space: nowrap;
+    text-shadow: 0 1px 4px #000;
+  }
+  .marked-row { animation: fadeSlideIn 0.4s ease; }
+  @keyframes fadeSlideIn { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Camera Feed -->
+  <div class="col-lg-7">
+    <div class="glass-panel">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0"><i class="fa-solid fa-camera me-1"></i> Camera Feed</h6>
+        <div class="d-flex gap-2 align-items-center">
+          <span class="risk-indicator good" id="scanStatus">Initializing...</span>
+        </div>
+      </div>
+
+      <div class="webcam-container" id="webcamContainer">
+        <video id="videoFeed" class="webcam-feed" autoplay playsinline muted></video>
+        <canvas id="overlayCanvas" class="webcam-overlay" id="overlayCanvas"></canvas>
+        <div class="scanner-laser"></div>
+      </div>
+
+      <canvas id="captureCanvas" style="display:none;"></canvas>
+
+      <div class="mt-3 d-flex gap-3 justify-content-between align-items-center">
+        <div class="d-flex gap-2">
+          <button id="startCameraBtn" onclick="startCamera()" class="btn btn-custom btn-primary-gradient">
+            <i class="fa-solid fa-play me-1"></i> Start Camera
+          </button>
+          <button id="stopCameraBtn" onclick="stopCamera()" class="btn btn-secondary d-none">
+            <i class="fa-solid fa-pause me-1"></i> Pause
+          </button>
+        </div>
+        <form method="POST" action="{{ url_for('lecturer.stop_session', session_id=session.id) }}"
+              onsubmit="return confirm('End this session? Absent students will be recorded automatically.')">
+          <button type="submit" class="btn btn-custom btn-danger-gradient">
+            <i class="fa-solid fa-stop me-1"></i> End Session
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Session Info -->
+    <div class="glass-panel mt-4">
+      <div class="row g-3 text-center">
+        <div class="col-4">
+          <p class="text-muted small mb-1">Course</p>
+          <p class="fw-semibold text-white mb-0">{{ session.course.course_code }}</p>
+        </div>
+        <div class="col-4">
+          <p class="text-muted small mb-1">Session Code</p>
+          <code style="color:#38bdf8;font-size:1rem;">{{ session.session_code }}</code>
+        </div>
+        <div class="col-4">
+          <p class="text-muted small mb-1">Started</p>
+          <p class="fw-semibold text-white mb-0">{{ session.start_time.strftime('%I:%M %p') }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance Log -->
+  <div class="col-lg-5">
+    <div class="glass-panel h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0"><i class="fa-solid fa-list-check me-1"></i> Attendance Log</h6>
+        <span class="badge" style="background:var(--success-gradient);" id="presentCount">{{ records|length }} Present</span>
+      </div>
+
+      <div class="mb-3 small text-muted">
+        Enrolled: <strong class="text-white">{{ enrolled_students|length }}</strong> &nbsp;|&nbsp;
+        Remaining: <strong class="text-warning" id="remainingCount">{{ enrolled_students|length - records|length }}</strong>
+      </div>
+
+      <div style="max-height:420px;overflow-y:auto;" id="attendanceLog">
+        {% for record in records %}
+        <div class="d-flex align-items-center gap-3 mb-2 p-2 rounded-3 marked-row" style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15);">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--success-gradient);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fa-solid fa-check text-white small"></i>
+          </div>
+          <div class="flex-grow-1">
+            <div class="fw-semibold text-white small">{{ record.student.full_name }}</div>
+            <div class="text-muted" style="font-size:0.7rem;">{{ record.student.matric_number }} · {{ record.time_marked.strftime('%I:%M:%S %p') }}</div>
+          </div>
+          <span class="risk-indicator good small">Present</span>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Undetected Students -->
+      {% set marked_ids = records | map(attribute='student_id') | list %}
+      {% set pending = enrolled_students | rejectattr('id', 'in', marked_ids) | list %}
+      {% if pending %}
+      <hr style="border-color:var(--panel-border);">
+      <p class="text-muted small mb-2">Pending recognition:</p>
+      {% for s in pending %}
+      <div class="d-flex align-items-center gap-2 mb-1 py-1" id="pending-{{ s.id }}">
+        <div style="width:8px;height:8px;border-radius:50%;background:#fbbf24;flex-shrink:0;"></div>
+        <span class="text-muted small">{{ s.full_name }} — {{ s.matric_number }}</span>
+      </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const SESSION_ID = {{ session.id }};
+  const TOTAL_ENROLLED = {{ enrolled_students|length }};
+  let markedCount = {{ records|length }};
+  let markedIds = new Set({{ marked_student_ids | tojson }});
+</script>
+<script src="{{ url_for('static', filename='js/attendance_scan.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,476 @@
+/* 
+  Smart Student Attendance System Using Facial Recognition
+  Custom Stylesheet - Modern Glassmorphic Dark Design
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-gradient: linear-gradient(135deg, #090d16 0%, #111827 100%);
+  --panel-bg: rgba(22, 28, 45, 0.6);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  
+  /* Gradients */
+  --primary-gradient: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+  --secondary-gradient: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%);
+  --success-gradient: linear-gradient(135deg, #34d399 0%, #059669 100%);
+  --danger-gradient: linear-gradient(135deg, #fb7185 0%, #dc2626 100%);
+  --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  --info-gradient: linear-gradient(135deg, #22d3ee 0%, #0891b2 100%);
+  
+  --glass-glow-cyan: 0 0 15px rgba(56, 189, 248, 0.15);
+  --glass-glow-green: 0 0 15px rgba(52, 211, 153, 0.15);
+}
+
+/* Base Styles */
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-gradient);
+  color: var(--text-main);
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  letter-spacing: -0.01em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Glassmorphic Panel/Card */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+}
+
+/* Gradient text */
+.text-gradient {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Custom Buttons */
+.btn-custom {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 24px;
+  color: #fff;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.btn-primary-gradient {
+  background: var(--primary-gradient);
+}
+.btn-primary-gradient:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  color: #fff;
+}
+
+.btn-secondary-gradient {
+  background: var(--secondary-gradient);
+}
+.btn-secondary-gradient:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+  color: #fff;
+}
+
+.btn-danger-gradient {
+  background: var(--danger-gradient);
+}
+.btn-danger-gradient:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+  color: #fff;
+}
+
+/* Portal Landing Selection Page */
+.portal-card {
+  text-align: center;
+  padding: 40px 20px;
+  cursor: pointer;
+  height: 100%;
+}
+
+.portal-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.portal-card:hover .portal-icon {
+  transform: scale(1.15) rotate(5deg);
+}
+
+/* Dashboard Sidebar Layout */
+.dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid var(--panel-border);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.sidebar-brand {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 32px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-item a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sidebar-item a:hover, .sidebar-item.active a {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-item.active a {
+  background: var(--primary-gradient);
+  box-shadow: var(--glass-glow-cyan);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 8px 0;
+  border-top: 1px solid var(--panel-border);
+}
+
+/* Main Content Wrapper */
+.main-content {
+  flex: 1;
+  margin-left: 260px;
+  padding: 40px;
+  transition: all 0.3s ease;
+}
+
+/* Stats Cards */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  border-left: 4px solid #38bdf8;
+}
+
+.stat-card.primary { border-color: #38bdf8; }
+.stat-card.success { border-color: #34d399; }
+.stat-card.warning { border-color: #fbbf24; }
+.stat-card.danger { border-color: #fb7185; }
+
+.stat-icon {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  font-size: 2.5rem;
+  opacity: 0.15;
+}
+
+/* Custom Table Design */
+.custom-table {
+  color: var(--text-main);
+  background: transparent !important;
+}
+
+.custom-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--panel-border) !important;
+  background: transparent !important;
+}
+
+.custom-table td {
+  border-bottom: 1px solid var(--panel-border) !important;
+  background: transparent !important;
+  vertical-align: middle;
+  padding: 16px 12px;
+}
+
+.custom-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Dark Modal */
+.modal-content-glass {
+  background: #0f172a;
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: 16px;
+  color: var(--text-main);
+}
+
+.modal-header-glass {
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.modal-footer-glass {
+  border-top: 1px solid var(--panel-border);
+}
+
+/* Form inputs for glass theme */
+.form-glass {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid var(--panel-border) !important;
+  color: var(--text-main) !important;
+  border-radius: 10px !important;
+  padding: 12px 16px !important;
+  transition: all 0.3s ease;
+}
+
+.form-glass:focus {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25) !important;
+}
+
+.form-glass::placeholder {
+  color: #64748b;
+}
+
+/* Webcam Container & Scanning Overlay */
+.webcam-container {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+}
+
+.webcam-feed {
+  width: 100%;
+  height: auto;
+  display: block;
+  transform: scaleX(-1); /* mirror effect */
+}
+
+.webcam-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Neon Scanner Box Animation */
+.scanner-reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 220px;
+  height: 220px;
+  margin-left: -110px;
+  margin-top: -110px;
+  border: 2px dashed #34d399;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+  animation: pulse-reticle 2s infinite ease-in-out;
+}
+
+@keyframes pulse-reticle {
+  0%, 100% {
+    transform: scale(0.98);
+    box-shadow: 0 0 10px rgba(52, 211, 153, 0.2);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 25px rgba(52, 211, 153, 0.5);
+  }
+}
+
+/* Scanning bar */
+.scanner-laser {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(to right, transparent, #34d399, transparent);
+  box-shadow: 0 0 10px #34d399;
+  animation: laser-scan 3s infinite linear;
+}
+
+@keyframes laser-scan {
+  0% { top: 0%; }
+  50% { top: 100%; }
+  100% { top: 0%; }
+}
+
+/* Notifications Bell Badge */
+.nav-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 4px 6px;
+  border-radius: 50%;
+  background: var(--danger-gradient);
+  font-size: 0.65rem;
+}
+
+/* Profile Photo Circular Wrapper */
+.profile-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #2563eb;
+}
+
+.profile-avatar-lg {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #2563eb;
+  box-shadow: var(--glass-glow-cyan);
+}
+
+/* At-risk student card alerts */
+.risk-indicator {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+.risk-indicator.critical {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+.risk-indicator.warning {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+.risk-indicator.good {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+/* Calendar styling for student portal */
+.attendance-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.calendar-day {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  height: 60px;
+  padding: 6px;
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.calendar-day.active-class.present {
+  background: rgba(52, 211, 153, 0.15);
+  border-color: rgba(52, 211, 153, 0.4);
+}
+
+.calendar-day.active-class.absent {
+  background: rgba(251, 113, 133, 0.15);
+  border-color: rgba(251, 113, 133, 0.4);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 991.98px) {
+  .sidebar {
+    left: -260px;
+  }
+  .sidebar.active {
+    left: 0;
+  }
+  .main-content {
+    margin-left: 0;
+    padding: 24px;
+  }
+  .toggle-sidebar-btn {
+    display: block !important;
+  }
+}
+
+.toggle-sidebar-btn {
+  display: none;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}

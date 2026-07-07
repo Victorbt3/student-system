@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — Smart Attendance{% endblock %}
+{% block header_title %}<i class="fa-solid fa-chart-line me-2 text-gradient"></i>Admin Dashboard{% endblock %}
+
+{% block styles %}
+<style>
+  .stat-card { transition: transform 0.3s ease; }
+  .stat-card:hover { transform: translateY(-4px); }
+  .stat-num { font-family:'Outfit',sans-serif; font-size:2.5rem; font-weight:700; line-height:1; }
+  .progress-ring { font-size:3rem; font-weight:700; font-family:'Outfit',sans-serif; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+
+  <!-- Stat Cards -->
+  <div class="col-6 col-xl-3">
+    <div class="glass-panel stat-card primary h-100">
+      <p class="text-muted small mb-2"><i class="fa-solid fa-graduation-cap me-1"></i> Total Students</p>
+      <div class="stat-num text-gradient">{{ total_students }}</div>
+      <p class="text-muted small mt-2 mb-0">Registered in system</p>
+      <i class="fa-solid fa-graduation-cap stat-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="glass-panel stat-card success h-100">
+      <p class="text-muted small mb-2"><i class="fa-solid fa-chalkboard-user me-1"></i> Total Lecturers</p>
+      <div class="stat-num" style="background:var(--success-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ total_lecturers }}</div>
+      <p class="text-muted small mt-2 mb-0">Teaching staff</p>
+      <i class="fa-solid fa-chalkboard-user stat-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="glass-panel stat-card warning h-100">
+      <p class="text-muted small mb-2"><i class="fa-solid fa-book-open me-1"></i> Total Courses</p>
+      <div class="stat-num" style="background:var(--warning-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ total_courses }}</div>
+      <p class="text-muted small mt-2 mb-0">Active courses</p>
+      <i class="fa-solid fa-book-open stat-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="glass-panel stat-card danger h-100">
+      <p class="text-muted small mb-2"><i class="fa-solid fa-circle-dot me-1"></i> Active Sessions</p>
+      <div class="stat-num" style="background:var(--info-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ active_sessions }}</div>
+      <p class="text-muted small mt-2 mb-0">Running right now</p>
+      <i class="fa-solid fa-camera stat-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <!-- Attendance Rate Gauge -->
+  <div class="col-md-4">
+    <div class="glass-panel h-100 text-center">
+      <h6 class="text-muted mb-4"><i class="fa-solid fa-gauge-high me-1"></i> Global Attendance Rate</h6>
+      <div style="position:relative;width:160px;height:160px;margin:0 auto 20px;">
+        <canvas id="gaugeChart" width="160" height="160"></canvas>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);">
+          <div class="progress-ring text-gradient">{{ attendance_rate }}<span style="font-size:1rem">%</span></div>
+        </div>
+      </div>
+      <p class="text-muted small">
+        {% if attendance_rate >= 75 %}<span class="risk-indicator good">Excellent</span>
+        {% elif attendance_rate >= 60 %}<span class="risk-indicator warning">Needs Attention</span>
+        {% else %}<span class="risk-indicator critical">Critical</span>{% endif %}
+      </p>
+    </div>
+  </div>
+
+  <!-- Weekly Attendance Chart -->
+  <div class="col-md-8">
+    <div class="glass-panel h-100">
+      <h6 class="text-muted mb-3"><i class="fa-solid fa-chart-bar me-1"></i> Weekly Attendance Overview</h6>
+      <canvas id="weeklyChart" height="120"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Department Comparison Chart -->
+  <div class="col-md-6">
+    <div class="glass-panel h-100">
+      <h6 class="text-muted mb-3"><i class="fa-solid fa-chart-pie me-1"></i> Department Attendance</h6>
+      <canvas id="deptChart" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="col-md-6">
+    <div class="glass-panel h-100">
+      <h6 class="text-muted mb-3"><i class="fa-solid fa-bolt me-1"></i> Quick Actions</h6>
+      <div class="d-grid gap-3">
+        <a href="{{ url_for('admin.students') }}" class="btn btn-custom btn-primary-gradient text-start px-4">
+          <i class="fa-solid fa-user-plus me-2"></i> Manage Students
+        </a>
+        <a href="{{ url_for('admin.lecturers') }}" class="btn btn-custom btn-secondary-gradient text-start px-4">
+          <i class="fa-solid fa-chalkboard-user me-2"></i> Manage Lecturers
+        </a>
+        <a href="{{ url_for('admin.courses') }}" class="btn btn-custom text-start px-4" style="background:var(--warning-gradient);color:#fff;">
+          <i class="fa-solid fa-book-open me-2"></i> Manage Courses
+        </a>
+      </div>
+
+      <hr style="border-color:var(--panel-border);margin:24px 0;">
+      <h6 class="text-muted mb-3"><i class="fa-solid fa-circle-info me-1"></i> System Info</h6>
+      <div class="d-flex flex-column gap-2">
+        <div class="d-flex justify-content-between text-muted small">
+          <span>Database</span><span class="text-white">SQLite / MySQL</span>
+        </div>
+        <div class="d-flex justify-content-between text-muted small">
+          <span>Face Engine</span><span class="text-white">OpenCV LBPH</span>
+        </div>
+        <div class="d-flex justify-content-between text-muted small">
+          <span>Framework</span><span class="text-white">Python Flask 2.3</span>
+        </div>
+        <div class="d-flex justify-content-between text-muted small">
+          <span>AI Module</span><span class="risk-indicator good">Active</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/charts_dashboard.js') }}"></script>
+<script>
+  const attendanceRate = {{ attendance_rate }};
+  initAdminCharts(attendanceRate);
+</script>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Profile Settings — {{ student.full_name }}{% endblock %}
+{% block header_title %}<i class="fa-solid fa-user-gear me-2"></i>Profile Settings{% endblock %}
+
+{% block content %}
+<div class="row g-4 justify-content-center">
+  <div class="col-lg-8">
+    <div class="glass-panel">
+      <div class="text-center mb-4">
+        <img src="{{ url_for('static', filename='uploads/profile_pics/' + student.profile_pic) }}" alt="Avatar"
+             class="profile-avatar-lg mb-3"
+             onerror="this.src='https://ui-avatars.com/api/?name={{ student.full_name|urlencode }}&background=059669&color=fff&rounded=true&size=120'">
+        <h5 class="mb-1">{{ student.full_name }}</h5>
+        <p class="text-muted small">{{ student.matric_number }} &mdash; {{ student.department }}</p>
+      </div>
+
+      <form method="POST" action="{{ url_for('student.profile') }}">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label text-muted small fw-semibold">Matric Number</label>
+            <input type="text" class="form-control form-glass" value="{{ student.matric_number }}" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted small fw-semibold">Full Name</label>
+            <input type="text" class="form-control form-glass" value="{{ student.full_name }}" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted small fw-semibold">Faculty</label>
+            <input type="text" class="form-control form-glass" value="{{ student.faculty }}" disabled>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label text-muted small fw-semibold">Department</label>
+            <input type="text" class="form-control form-glass" value="{{ student.department }}" disabled>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label text-muted small fw-semibold">Level</label>
+            <input type="text" class="form-control form-glass" value="{{ student.level }}L" disabled>
+          </div>
+
+          <div class="col-12"><hr style="border-color:var(--panel-border);"></div>
+          <div class="col-12"><p class="text-muted small mb-0"><i class="fa-solid fa-pen me-1"></i> Editable fields below</p></div>
+
+          <div class="col-md-6">
+            <label class="form-label text-muted small fw-semibold">Email Address</label>
+            <input type="email" name="email" class="form-control form-glass" value="{{ current_user.email }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted small fw-semibold">Phone Number</label>
+            <input type="tel" name="phone_number" class="form-control form-glass" value="{{ student.phone_number or '' }}" placeholder="+1234567890">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted small fw-semibold">New Password <span class="text-muted">(leave blank to keep current)</span></label>
+            <input type="password" name="password" class="form-control form-glass" placeholder="Enter new password">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted small fw-semibold">Face Status</label>
+            <div class="form-control form-glass d-flex align-items-center gap-2" style="cursor:default;">
+              {% if student.face_registered %}
+                <span class="risk-indicator good"><i class="fa-solid fa-check me-1"></i>Registered</span>
+                <span class="text-muted small">{{ student.registered_at.strftime('%d %b %Y') if student.registered_at else '' }}</span>
+              {% else %}
+                <span class="risk-indicator critical"><i class="fa-solid fa-xmark me-1"></i>Not Registered</span>
+                <a href="{{ url_for('student.register_face') }}" class="small" style="color:#38bdf8;">Register now →</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end">
+          <button type="submit" class="btn btn-custom btn-primary-gradient px-5">
+            <i class="fa-solid fa-save me-2"></i>Update Profile
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

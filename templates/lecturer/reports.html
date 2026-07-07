@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Reports & Export — Lecturer{% endblock %}
+{% block header_title %}<i class="fa-solid fa-file-export me-2"></i>Reports & Exports{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h5 class="mb-1">Attendance Reports</h5>
+    <p class="text-muted small mb-0">Export attendance records in PDF, Excel, or CSV</p>
+  </div>
+  <a href="{{ url_for('lecturer.start_session') }}" class="btn btn-custom btn-primary-gradient">
+    <i class="fa-solid fa-camera me-2"></i>New Session
+  </a>
+</div>
+
+<!-- Analytics Charts -->
+<div class="row g-4 mb-4">
+  <div class="col-md-8">
+    <div class="glass-panel">
+      <h6 class="text-muted mb-3"><i class="fa-solid fa-chart-bar me-1"></i> Attendance Trend by Course</h6>
+      <canvas id="courseAttendanceChart" height="120"></canvas>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="glass-panel">
+      <h6 class="text-muted mb-3"><i class="fa-solid fa-chart-pie me-1"></i> Status Breakdown</h6>
+      <canvas id="statusPieChart" height="180"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Session Table -->
+<div class="glass-panel">
+  <h6 class="text-muted mb-3"><i class="fa-solid fa-table me-1"></i> All Sessions</h6>
+  <div class="table-responsive">
+    <table class="table custom-table mb-0">
+      <thead>
+        <tr><th>Date</th><th>Course</th><th>Session Code</th><th>Duration</th><th>Status</th><th>Export</th></tr>
+      </thead>
+      <tbody>
+        {% for session in sessions %}
+        <tr>
+          <td class="text-muted small">{{ session.session_date.strftime('%d %b %Y') }}</td>
+          <td>
+            <code style="color:#38bdf8;background:rgba(56,189,248,0.1);padding:2px 8px;border-radius:5px;">{{ session.course.course_code }}</code>
+            <div class="text-muted" style="font-size:0.7rem;">{{ session.course.course_title }}</div>
+          </td>
+          <td><span style="font-family:monospace;color:#a78bfa;letter-spacing:2px;">{{ session.session_code }}</span></td>
+          <td class="text-muted small">
+            {{ session.start_time.strftime('%I:%M %p') }}
+            {% if session.end_time %} — {{ session.end_time.strftime('%I:%M %p') }}{% endif %}
+          </td>
+          <td>
+            {% if session.status == 'active' %}
+              <span class="risk-indicator good"><span style="width:6px;height:6px;background:#34d399;border-radius:50%;display:inline-block;animation:livePulse 1.5s infinite;"></span> Active</span>
+            {% else %}
+              <span class="risk-indicator good" style="background:rgba(56,189,248,0.1);color:#38bdf8;border-color:rgba(56,189,248,0.3);">Completed</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="d-flex gap-2">
+              <a href="{{ url_for('lecturer.export_report', fmt='pdf', session_id=session.id) }}"
+                 class="btn btn-sm btn-custom btn-danger-gradient" title="PDF"><i class="fa-solid fa-file-pdf"></i></a>
+              <a href="{{ url_for('lecturer.export_report', fmt='excel', session_id=session.id) }}"
+                 class="btn btn-sm btn-custom" style="background:linear-gradient(135deg,#34d399,#059669);color:#fff;" title="Excel"><i class="fa-solid fa-file-excel"></i></a>
+              <a href="{{ url_for('lecturer.export_report', fmt='csv', session_id=session.id) }}"
+                 class="btn btn-sm btn-custom" style="background:linear-gradient(135deg,#fbbf24,#d97706);color:#fff;" title="CSV"><i class="fa-solid fa-file-csv"></i></a>
+              {% if session.status == 'active' %}
+              <a href="{{ url_for('lecturer.live_scan', session_id=session.id) }}"
+                 class="btn btn-sm btn-custom btn-primary-gradient" title="Resume"><i class="fa-solid fa-camera"></i></a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-5">
+          <i class="fa-solid fa-file fa-2x mb-3 d-block opacity-25"></i>No sessions recorded yet.
+          <a href="{{ url_for('lecturer.start_session') }}" class="d-block mt-2 small" style="color:#38bdf8;">Start your first session →</a>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>@keyframes livePulse{0%,100%{opacity:1}50%{opacity:0.4}}</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/charts_dashboard.js') }}"></script>
+<script>initLecturerCharts();</script>
+{% endblock %}

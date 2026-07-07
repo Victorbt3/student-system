@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Student Portal — {{ student.full_name }}{% endblock %}
+{% block header_title %}<i class="fa-solid fa-user-graduate me-2"></i>My Attendance Portal{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="glass-panel mb-4" style="background:linear-gradient(135deg,rgba(5,150,105,0.2),rgba(16,185,129,0.1));">
+  <div class="row align-items-center">
+    <div class="col-auto">
+      <img src="{{ url_for('static', filename='uploads/profile_pics/' + student.profile_pic) }}" alt="Avatar"
+           class="profile-avatar-lg"
+           onerror="this.src='https://ui-avatars.com/api/?name={{ student.full_name|urlencode }}&background=059669&color=fff&rounded=true&size=120'">
+    </div>
+    <div class="col">
+      <h4 class="mb-1">{{ student.full_name }}</h4>
+      <p class="text-muted mb-1 small"><i class="fa-solid fa-id-card me-1"></i> {{ student.matric_number }}</p>
+      <p class="text-muted mb-2 small"><i class="fa-solid fa-building me-1"></i> {{ student.department }} &mdash; {{ student.level }}L</p>
+      <div class="d-flex gap-2 flex-wrap">
+        {% if student.face_registered %}
+          <span class="risk-indicator good"><i class="fa-solid fa-face-smile me-1"></i> Face Registered</span>
+        {% else %}
+          <a href="{{ url_for('student.register_face') }}" class="risk-indicator critical text-decoration-none">
+            <i class="fa-solid fa-triangle-exclamation me-1"></i> Register Face Now
+          </a>
+        {% endif %}
+        <span class="risk-indicator {{ 'good' if overall_rate >= 75 else ('warning' if overall_rate >= 60 else 'critical') }}">
+          Overall: {{ overall_rate }}%
+        </span>
+      </div>
+    </div>
+    <div class="col-auto d-none d-md-block text-end">
+      <div style="font-family:'Outfit',sans-serif;font-size:3rem;font-weight:700;line-height:1;background:var(--success-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+        {{ overall_rate }}<span style="font-size:1.5rem;">%</span>
+      </div>
+      <p class="text-muted small">Overall Attendance</p>
+    </div>
+  </div>
+</div>
+
+<!-- Unread AI Warnings -->
+{% set warnings = notifications | rejectattr('is_read') | list %}
+{% if warnings %}
+<div class="mb-4">
+  {% for notif in warnings[:3] %}
+  <div class="glass-panel mb-2 py-3 px-4" style="border-left:4px solid #f59e0b;">
+    <div class="d-flex justify-content-between align-items-start gap-3">
+      <div>
+        <p class="fw-semibold text-white mb-1 small"><i class="fa-solid fa-brain me-1" style="color:#f59e0b;"></i>{{ notif.title }}</p>
+        <p class="text-muted mb-0 small">{{ notif.message }}</p>
+      </div>
+      <button onclick="markNotificationRead({{ notif.id }})" class="btn btn-sm text-muted" style="flex-shrink:0;font-size:0.7rem;background:rgba(255,255,255,0.05);">
+        Dismiss
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Per-Course Stats -->
+<div class="row g-4 mb-4">
+  {% for cs in course_stats %}
+  <div class="col-md-6 col-xl-4">
+    <div class="glass-panel h-100">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+          <span style="font-size:0.7rem;font-weight:700;letter-spacing:1px;color:#38bdf8;background:rgba(56,189,248,0.1);padding:3px 8px;border-radius:5px;">{{ cs.code }}</span>
+          <h6 class="mt-2 mb-0 text-white" style="font-size:0.9rem;">{{ cs.title }}</h6>
+          <p class="text-muted mb-0 small">Dr. {{ cs.lecturer }}</p>
+        </div>
+        <div class="text-end">
+          <div style="font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:700;background:{{ 'var(--success-gradient)' if cs.rate >= 75 else ('var(--warning-gradient)' if cs.rate >= 60 else 'var(--danger-gradient)') }};-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;">{{ cs.rate }}<span style="font-size:1rem;">%</span></div>
+        </div>
+      </div>
+      <!-- Progress Bar -->
+      <div style="background:rgba(255,255,255,0.05);border-radius:999px;height:8px;margin-bottom:12px;">
+        <div style="height:8px;border-radius:999px;width:{{ cs.rate }}%;background:{{ 'var(--success-gradient)' if cs.rate >= 75 else ('var(--warning-gradient)' if cs.rate >= 60 else 'var(--danger-gradient)') }};transition:width 1s ease;"></div>
+      </div>
+      <div class="d-flex justify-content-between text-muted small">
+        <span>{{ cs.attended }} attended</span>
+        <span>{{ cs.total }} total sessions</span>
+      </div>
+      <div class="mt-2">
+        <span class="risk-indicator {{ 'good' if cs.rate >= 75 else ('warning' if cs.rate >= 60 else 'critical') }}">
+          {{ 'On Track' if cs.rate >= 75 else ('At Risk' if cs.rate >= 60 else 'Critical') }}
+        </span>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12">
+    <div class="glass-panel text-center py-5 text-muted">
+      <i class="fa-solid fa-book-open fa-2x mb-3 d-block opacity-25"></i>
+      Not enrolled in any courses yet.
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Recent Attendance History -->
+<div class="glass-panel">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="text-muted mb-0"><i class="fa-solid fa-clock-rotate-left me-1"></i> Recent Attendance History</h6>
+    <span class="text-muted small">Last 10 records</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table custom-table mb-0">
+      <thead><tr><th>Date & Time</th><th>Course</th><th>Method</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for rec in recent_records %}
+        <tr>
+          <td class="text-muted small">{{ rec.time_marked.strftime('%d %b %Y, %I:%M %p') }}</td>
+          <td>
+            <code style="color:#38bdf8;background:rgba(56,189,248,0.1);padding:2px 6px;border-radius:5px;">
+              {{ rec.session.course.course_code }}
+            </code>
+          </td>
+          <td class="text-muted small">
+            <i class="fa-solid {{ 'fa-face-smile' if rec.verification_method == 'face_recognition' else 'fa-hand' }} me-1"></i>
+            {{ rec.verification_method.replace('_',' ').title() }}
+          </td>
+          <td>
+            <span class="risk-indicator {{ 'good' if rec.status == 'present' else ('warning' if rec.status == 'late' else 'critical') }}">
+              {{ rec.status.title() }}
+            </span>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-center text-muted py-4">No attendance records yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

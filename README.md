@@ -134,3 +134,4 @@ Import the schema from `database.sql` if you want the MySQL-specific DDL.
 ---
 
 © 2026 Smart Student Attendance System. Final Year CS Project.
+# student-system

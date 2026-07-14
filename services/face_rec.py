@@ -1,6 +1,7 @@
 import os
 import base64
 import pickle
+from services.storage import storage_service
 
 # Graceful degradation - try to import cv2 and numpy
 try:
@@ -35,6 +36,12 @@ class FaceRecognitionService:
                 # Try LBPH (requires opencv-contrib)
                 self.recognizer = cv2.face.LBPHFaceRecognizer_create()
                 self.has_lbph = True
+                
+                # Check for model in Supabase if missing locally
+                if not os.path.exists(self.model_path) and storage_service.is_configured():
+                    print(f"[FaceRec] Local model missing, attempting to download from Supabase...")
+                    storage_service.download_file("models/face_recognizer.yml", self.model_path)
+
                 if os.path.exists(self.model_path):
                     self.recognizer.read(self.model_path)
                     print(f"[FaceRec] Loaded trained model from {self.model_path}")
@@ -102,6 +109,12 @@ class FaceRecognitionService:
         os.makedirs(student_dir, exist_ok=True)
         file_path = os.path.join(student_dir, f"sample_{sample_num}.jpg")
         cv2.imwrite(file_path, face_resized)
+        
+        # Upload to Supabase Storage
+        if storage_service.is_configured():
+            cloud_path = f"datasets/{matric_number.replace('/', '_')}/sample_{sample_num}.jpg"
+            storage_service.upload_file(file_path, cloud_path)
+            
         return True, file_path
 
     def train_model(self, student_id_mappings):
@@ -112,6 +125,28 @@ class FaceRecognitionService:
             from PIL import Image
 
             face_samples, ids = [], []
+            
+            # Sync dataset from Supabase if configured
+            if storage_service.is_configured():
+                print("[FaceRec] Syncing dataset from Supabase before training...")
+                try:
+                    folders = storage_service.list_files("datasets")
+                    for folder in folders:
+                        folder_name = folder.get('name')
+                        if not folder_name or folder_name == '.emptyFolderPlaceholder': 
+                            continue
+                        
+                        files = storage_service.list_files(f"datasets/{folder_name}")
+                        for file_item in files:
+                            filename = file_item.get('name')
+                            if filename and filename.endswith('.jpg'):
+                                cloud_path = f"datasets/{folder_name}/{filename}"
+                                local_dest = os.path.join(self.dataset_dir, folder_name, filename)
+                                if not os.path.exists(local_dest):
+                                    storage_service.download_file(cloud_path, local_dest)
+                except Exception as e:
+                    print(f"[FaceRec] Dataset sync error: {e}")
+
             if not os.path.exists(self.dataset_dir):
                 return False, "Dataset directory does not exist."
 
@@ -141,6 +176,11 @@ class FaceRecognitionService:
                 self.recognizer.train(face_samples, np.array(ids))
                 self.recognizer.write(self.model_path)
                 self.has_lbph = True
+                
+                # Upload the trained model to Supabase
+                if storage_service.is_configured():
+                    storage_service.upload_file(self.model_path, "models/face_recognizer.yml")
+                    
                 return True, f"Model trained on {len(face_samples)} samples for {len(set(ids))} student(s)."
             except Exception as e:
                 return False, f"Training failed: {str(e)}"

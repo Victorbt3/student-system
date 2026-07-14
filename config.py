@@ -4,6 +4,10 @@ class Config:
     # Flask app secret key
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'premium-glassmorphic-secret-key-9982'
     
+    # Supabase Configuration
+    SUPABASE_URL = os.environ.get('SUPABASE_URL')
+    SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
+    
     # Base directory
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     
@@ -17,6 +21,11 @@ class Config:
         default_db_path = 'sqlite:///' + os.path.join(BASE_DIR, 'attendance.db')
         
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or default_db_path
+
+    # Debug: resolved DB URI (helps diagnose "data not saving")
+    # Printed at import-time; safe for local/dev.
+    print(f"[Config] SQLALCHEMY_DATABASE_URI={SQLALCHEMY_DATABASE_URI}")
+
         
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     

@@ -51,8 +51,12 @@ def create_app():
         except Exception:
             pass
 
+        # Debug: show resolved DB URI and where SQLite file is expected (if applicable)
+        print(f"[App] Using SQLALCHEMY_DATABASE_URI={app.config.get('SQLALCHEMY_DATABASE_URI')}")
+
         db.create_all()
         _create_default_admin()
+
 
     return app
 

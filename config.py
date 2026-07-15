@@ -1,4 +1,5 @@
 import os
+from urllib.parse import urlparse, urlunparse
 
 class Config:
     # Flask app secret key
@@ -21,10 +22,15 @@ class Config:
         default_db_path = 'sqlite:///' + os.path.join(BASE_DIR, 'attendance.db')
         
     db_uri = os.environ.get('DATABASE_URL')
-    if db_uri and db_uri.startswith('postgres://'):
-        db_uri = db_uri.replace('postgres://', 'postgresql+pg8000://', 1)
-    elif db_uri and db_uri.startswith('postgresql://'):
-        db_uri = db_uri.replace('postgresql://', 'postgresql+pg8000://', 1)
+    if db_uri:
+        if db_uri.startswith('postgres://'):
+            db_uri = db_uri.replace('postgres://', 'postgresql+psycopg://', 1)
+        elif db_uri.startswith('postgresql://'):
+            db_uri = db_uri.replace('postgresql://', 'postgresql+psycopg://', 1)
+
+        # Preserve SSL mode for psycopg; this is required by Supabase.
+        parsed = urlparse(db_uri)
+        db_uri = urlunparse(parsed)
         
     SQLALCHEMY_DATABASE_URI = db_uri or default_db_path
 

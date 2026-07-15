@@ -7,4 +7,5 @@ reportlab>=3.6.0
 Werkzeug>=2.3.0
 Flask-Login>=0.6.0
 Pillow>=9.0.0
+psycopg[binary]>=3.1.0
 # NOTE: OpenCV is omitted for serverless deployment; the app will run in DEMO mode without it.

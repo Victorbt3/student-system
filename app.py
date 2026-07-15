@@ -54,8 +54,11 @@ def create_app():
         # Debug: show resolved DB URI and where SQLite file is expected (if applicable)
         print(f"[App] Using SQLALCHEMY_DATABASE_URI={app.config.get('SQLALCHEMY_DATABASE_URI')}")
 
-        db.create_all()
-        _create_default_admin()
+        # Only auto-create tables for local SQLite development.
+        # Production Postgres should use an existing schema to avoid connection/pooler issues.
+        if app.config.get('SQLALCHEMY_DATABASE_URI', '').startswith('sqlite'):
+            db.create_all()
+            _create_default_admin()
 
 
     return app

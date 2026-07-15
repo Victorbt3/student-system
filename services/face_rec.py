@@ -1,7 +1,12 @@
 import os
 import base64
 import pickle
-from services.storage import storage_service
+
+try:
+    from services.storage import storage_service
+except Exception:
+    storage_service = None
+
 
 # Graceful degradation - try to import cv2 and numpy
 try:
@@ -38,7 +43,7 @@ class FaceRecognitionService:
                 self.has_lbph = True
                 
                 # Check for model in Supabase if missing locally
-                if not os.path.exists(self.model_path) and storage_service.is_configured():
+                if not os.path.exists(self.model_path) and storage_service is not None and storage_service.is_configured():
                     print(f"[FaceRec] Local model missing, attempting to download from Supabase...")
                     storage_service.download_file("models/face_recognizer.yml", self.model_path)
 
@@ -111,7 +116,7 @@ class FaceRecognitionService:
         cv2.imwrite(file_path, face_resized)
         
         # Upload to Supabase Storage
-        if storage_service.is_configured():
+        if storage_service is not None and storage_service.is_configured():
             cloud_path = f"datasets/{matric_number.replace('/', '_')}/sample_{sample_num}.jpg"
             storage_service.upload_file(file_path, cloud_path)
             
@@ -127,7 +132,7 @@ class FaceRecognitionService:
             face_samples, ids = [], []
             
             # Sync dataset from Supabase if configured
-            if storage_service.is_configured():
+            if storage_service is not None and storage_service.is_configured():
                 print("[FaceRec] Syncing dataset from Supabase before training...")
                 try:
                     folders = storage_service.list_files("datasets")
@@ -178,7 +183,7 @@ class FaceRecognitionService:
                 self.has_lbph = True
                 
                 # Upload the trained model to Supabase
-                if storage_service.is_configured():
+                if storage_service is not None and storage_service.is_configured():
                     storage_service.upload_file(self.model_path, "models/face_recognizer.yml")
                     
                 return True, f"Model trained on {len(face_samples)} samples for {len(set(ids))} student(s)."

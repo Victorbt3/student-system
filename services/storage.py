@@ -1,5 +1,12 @@
 import os
-from supabase import create_client, Client
+
+try:
+    from supabase import create_client
+    HAS_SUPABASE = True
+except ImportError:
+    HAS_SUPABASE = False
+    print("[Storage] supabase package not installed. Cloud storage disabled.")
+
 from config import Config
 
 class SupabaseStorageService:
@@ -7,7 +14,7 @@ class SupabaseStorageService:
         self.bucket_name = 'attendance-data'
         self.client = None
         
-        if Config.SUPABASE_URL and Config.SUPABASE_KEY:
+        if HAS_SUPABASE and Config.SUPABASE_URL and Config.SUPABASE_KEY:
             try:
                 self.client = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
             except Exception as e:

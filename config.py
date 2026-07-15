@@ -34,9 +34,11 @@ class Config:
             'sslmode', 'sslrootcert', 'sslcert', 'sslkey', 'sslcrl',
             'connect_timeout', 'application_name', 'options'
         }
-        filtered_query = urlencode(
-            [(key, value) for key, value in query_items if key in allowed_params]
-        )
+        filtered_items = []
+        for key, value in query_items:
+            if key in allowed_params:
+                filtered_items.append((key, value))
+        filtered_query = urlencode(filtered_items)
         parsed = parsed._replace(query=filtered_query)
         db_uri = urlunparse(parsed)
         

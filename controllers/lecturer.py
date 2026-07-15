@@ -8,12 +8,21 @@ from flask_login import login_required, current_user
 from models import db, Course, Student, AttendanceSession, AttendanceRecord, Lecturer
 from services import AIAnalyticsService
 
-# Import openpyxl and reportlab for file exports
-import pandas as pd
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib import colors
+# Import openpyxl and reportlab for file exports (graceful - may not be on Vercel)
+try:
+    import pandas as pd
+    HAS_PANDAS = True
+except ImportError:
+    HAS_PANDAS = False
+
+try:
+    from reportlab.lib.pagesizes import letter
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib import colors
+    HAS_REPORTLAB = True
+except ImportError:
+    HAS_REPORTLAB = False
 
 lecturer_bp = Blueprint('lecturer', __name__, url_prefix='/lecturer')
 
@@ -232,6 +241,8 @@ def export_report(fmt, session_id):
             'Status': r.status.upper()
         })
         
+    if not HAS_PANDAS:
+        return "Export not available on this deployment.", 503
     df = pd.DataFrame(data)
     
     # 1. CSV EXPORT

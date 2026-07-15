@@ -6,7 +6,9 @@
 let faceStream = null;
 let captureInterval = null;
 let sampleCount = 0;
-const TOTAL_SAMPLES = 100;
+const TOTAL_SAMPLES = 50; // Reduced from 100 for faster registration
+let frameBuffer = [];
+const FRAMES_PER_BATCH = 5; // Send 5 frames at once
 
 async function startFaceCapture() {
   const video = document.getElementById('faceVideo');
@@ -16,7 +18,7 @@ async function startFaceCapture() {
 
   try {
     faceStream = await navigator.mediaDevices.getUserMedia({
-      video: { width: 640, height: 480, facingMode: 'user' }
+      video: { width: 320, height: 240, facingMode: 'user' } // Reduced resolution for speed
     });
     video.srcObject = faceStream;
     await video.play();
@@ -25,8 +27,8 @@ async function startFaceCapture() {
     pauseBtn.classList.remove('d-none');
     statusEl.textContent = 'Capturing... Keep your face centered.';
 
-    // Start auto-capture every 300ms
-    captureInterval = setInterval(() => captureOneSample(), 300);
+    // Start auto-capture every 150ms (faster capture)
+    captureInterval = setInterval(() => captureOneSample(), 150);
   } catch (err) {
     console.error('Camera access denied:', err);
     statusEl.textContent = 'Camera access denied. Please grant permission and refresh.';
@@ -46,6 +48,10 @@ async function captureOneSample() {
   if (sampleCount >= TOTAL_SAMPLES) {
     clearInterval(captureInterval);
     captureInterval = null;
+    // Send any remaining frames in buffer
+    if (frameBuffer.length > 0) {
+      await sendFrameBatch();
+    }
     onCaptureComplete();
     return;
   }
@@ -54,34 +60,57 @@ async function captureOneSample() {
   const canvas = document.getElementById('faceCapCanvas');
   const ctx = canvas.getContext('2d');
 
-  canvas.width = video.videoWidth || 640;
-  canvas.height = video.videoHeight || 480;
+  canvas.width = video.videoWidth || 320;
+  canvas.height = video.videoHeight || 240;
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-  const frameData = canvas.toDataURL('image/jpeg', 0.8);
+  const frameData = canvas.toDataURL('image/jpeg', 0.6); // Lower quality for speed
 
-  try {
-    const resp = await fetch('/student/register-face/capture', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ frame: frameData, sample_num: sampleCount + 1 })
-    });
-    const data = await resp.json();
+  frameBuffer.push({
+    frame: frameData,
+    sample_num: sampleCount + 1
+  });
 
-    if (data.success) {
-      sampleCount++;
-      updateProgress(sampleCount);
+  // Flash effect on webcam container
+  const container = document.getElementById('faceWebcamContainer');
+  container.classList.add('capture-flash');
+  setTimeout(() => container.classList.remove('capture-flash'), 150);
 
-      // Flash effect on webcam container
-      const container = document.getElementById('faceWebcamContainer');
-      container.classList.add('capture-flash');
-      setTimeout(() => container.classList.remove('capture-flash'), 300);
-    }
-    // If face not detected, we skip silently and try next frame
-  } catch (err) {
-    console.error('Capture request failed:', err);
+  sampleCount++;
+  updateProgress(sampleCount);
+
+  // Send batch when buffer is full
+  if (frameBuffer.length >= FRAMES_PER_BATCH) {
+    await sendFrameBatch();
   }
 }
+
+async function sendFrameBatch() {
+  if (frameBuffer.length === 0) return;
+
+  const batch = frameBuffer.splice(0, FRAMES_PER_BATCH);
+
+  try {
+    const resp = await fetch('/student/register-face/batch-capture', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ frames: batch })
+    });
+
+    const data = await resp.json();
+    if (!data.success) {
+      console.error('Batch capture failed:', data);
+    } else if (data.saved_count !== undefined) {
+      // optionally log per-batch failures
+      if (data.results && data.results.some(r => !r.success)) {
+        console.warn('Some samples failed:', data.results.filter(r => !r.success).slice(0, 5));
+      }
+    }
+  } catch (err) {
+    console.error('Batch capture request failed:', err);
+  }
+}
+
 
 function updateProgress(count) {
   const countEl = document.getElementById('captureCount');

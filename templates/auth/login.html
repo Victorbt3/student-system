@@ -3,164 +3,271 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login — Smart Attendance System</title>
-  <meta name="description" content="Secure login to the Smart Student Attendance System">
-  <link rel="icon" type="image/png" href="https://img.icons8.com/color/48/facial-recognition.png">
+  <title>Sign In — Smart Attendance System</title>
+  <meta name="description" content="Sign in to the Smart Student Attendance System. Select your role and enter your credentials.">
+  <link rel="icon" href="https://img.icons8.com/color/48/facial-recognition.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <style>
-    .login-wrapper {
+    .auth-bg {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 40px 20px;
+      padding: 32px 16px;
+      position: relative;
+      z-index: 1;
+    }
+    .auth-orb {
+      position: fixed; border-radius: 50%; filter: blur(90px); opacity: 0.15; pointer-events: none;
+      animation: auth-float 10s ease-in-out infinite;
+    }
+    .auth-orb-1 { width: 400px; height: 400px; background: #3b82f6; top: -80px; left: -80px; animation-delay: 0s; }
+    .auth-orb-2 { width: 350px; height: 350px; background: #8b5cf6; bottom: -60px; right: -60px; animation-delay: 4s; }
+    @keyframes auth-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    .auth-card {
+      width: 100%; max-width: 440px;
+      background: rgba(10, 13, 26, 0.95);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      padding: 40px;
       position: relative;
       overflow: hidden;
     }
-    .orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; animation: floatOrb 8s ease-in-out infinite; }
-    .orb-1 { width: 500px; height: 500px; background: rgba(37,99,235,0.15); top: -150px; right: -150px; }
-    .orb-2 { width: 400px; height: 400px; background: rgba(124,58,237,0.12); bottom: -100px; left: -100px; animation-delay: -4s; }
-    @keyframes floatOrb { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-20px)} }
-
-    .login-card { position: relative; z-index: 1; width: 100%; max-width: 460px; }
-    .role-selector { display: flex; gap: 8px; margin-bottom: 28px; }
-    .role-btn {
-      flex: 1; padding: 10px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.03); color: var(--text-muted);
-      font-size: 0.85rem; cursor: pointer; transition: all 0.25s ease; text-align: center;
-      font-family: 'Outfit', sans-serif; font-weight: 500;
+    .auth-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--grad-hero);
     }
-    .role-btn.active { background: var(--primary-gradient); color: #fff; border-color: transparent; box-shadow: 0 0 20px rgba(37,99,235,0.3); }
-    .role-btn:hover:not(.active) { border-color: rgba(255,255,255,0.2); color: #fff; }
-    .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--text-muted); font-size: 0.8rem; }
-    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--panel-border); }
+    .auth-brand {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 32px;
+    }
+    .auth-brand-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: var(--grad-blue);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; color: #fff;
+    }
+    .auth-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.5rem; font-weight: 800;
+      color: var(--text-primary); margin-bottom: 6px;
+    }
+    .auth-sub {
+      font-size: 0.82rem; color: var(--text-secondary);
+    }
+    /* Role Selector */
+    .role-selector { display: flex; gap: 8px; margin-bottom: 24px; }
+    .role-option { flex: 1; }
+    .role-option input[type="radio"] { display: none; }
+    .role-label {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 12px 8px; border-radius: var(--radius-md);
+      background: var(--glass-bg); border: 1px solid var(--glass-border);
+      cursor: pointer; transition: var(--transition); text-align: center;
+    }
+    .role-label i { font-size: 1.1rem; }
+    .role-label span { font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); }
+    .role-option input:checked + .role-label { border-color: rgba(59,130,246,0.5); background: rgba(59,130,246,0.08); }
+    .role-option input:checked + .role-label i { color: #60a5fa; }
+    .role-option input:checked + .role-label span { color: #93c5fd; }
+    .role-option:hover .role-label { border-color: var(--glass-border-hover); background: var(--glass-bg-hover); }
+    /* Input group */
+    .input-group-glass {
+      position: relative; margin-bottom: 16px;
+    }
+    .input-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 0.85rem; pointer-events: none; z-index: 2;
+    }
+    .input-icon-right {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 0.85rem; cursor: pointer; z-index: 2;
+      background: none; border: none; padding: 0;
+      transition: color 0.2s;
+    }
+    .input-icon-right:hover { color: var(--text-secondary); }
+    .form-glass { padding-left: 40px !important; }
+    .form-glass.has-right-icon { padding-right: 40px !important; }
+    /* Remember me */
+    .remember-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .check-glass {
+      display: flex; align-items: center; gap: 8px; cursor: pointer;
+    }
+    .check-glass input { width: 16px; height: 16px; accent-color: #3b82f6; cursor: pointer; }
+    .check-glass span { font-size: 0.82rem; color: var(--text-secondary); }
+    .login-btn {
+      width: 100%; padding: 12px; border-radius: var(--radius-md);
+      background: var(--grad-blue); color: #fff; border: none;
+      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; transition: var(--transition);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .login-btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(59,130,246,0.35); }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 20px;
+      font-size: 0.8rem; color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--text-secondary); }
+    .divider-text {
+      text-align: center; font-size: 0.75rem; color: var(--text-muted);
+      margin: 6px 0 16px;
+    }
   </style>
 </head>
 <body>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
+  <!-- Background orbs -->
+  <div class="auth-orb auth-orb-1"></div>
+  <div class="auth-orb auth-orb-2"></div>
 
-  <div class="login-wrapper">
-    <div class="login-card">
-      <!-- Back to portal link -->
-      <a href="{{ url_for('index') }}" class="d-inline-flex align-items-center gap-2 text-muted small mb-4 text-decoration-none hover-text-white">
-        <i class="fa-solid fa-arrow-left"></i> Back to Portal
-      </a>
+  <div class="auth-bg">
+    <div class="auth-card">
 
-      <div class="glass-panel">
-        <!-- Logo -->
-        <div class="text-center mb-4">
-          <div style="width:64px;height:64px;border-radius:16px;background:var(--primary-gradient);display:inline-flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:16px;box-shadow:0 8px 24px rgba(37,99,235,0.4);">
-            <i class="fa-solid fa-face-viewfinder text-white"></i>
-          </div>
-          <h1 class="fs-4 mb-1">Welcome Back</h1>
-          <p class="text-muted small">Sign in to your portal</p>
+      <!-- Brand -->
+      <div class="auth-brand">
+        <div class="auth-brand-icon">
+          <i class="fa-solid fa-face-viewfinder"></i>
         </div>
+        <div>
+          <div style="font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:0.95rem; color:var(--text-primary);">Smart Attendance</div>
+          <div style="font-size:0.7rem; color:var(--text-secondary);">Facial Recognition System</div>
+        </div>
+      </div>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash-alert flash-{{ 'success' if category == 'success' else 'danger' if category == 'danger' else 'warning' if category == 'warning' else 'info' }} mb-3" role="alert">
+              {% if category == 'success' %}<i class="fa-solid fa-circle-check"></i>
+              {% elif category == 'danger' %}<i class="fa-solid fa-circle-exclamation"></i>
+              {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <h1 class="auth-title">Welcome back</h1>
+      <p class="auth-sub mb-4">Sign in to your portal to continue</p>
+
+      <form method="POST" action="{{ url_for('auth.login') }}" id="loginForm">
 
         <!-- Role Selector -->
-        <div class="role-selector" id="roleSelector">
-          <button type="button" class="role-btn" data-role="admin" onclick="selectRole('admin', this)">
-            <i class="fa-solid fa-user-shield d-block mb-1 fs-5"></i> Admin
-          </button>
-          <button type="button" class="role-btn" data-role="lecturer" onclick="selectRole('lecturer', this)">
-            <i class="fa-solid fa-chalkboard-user d-block mb-1 fs-5"></i> Lecturer
-          </button>
-          <button type="button" class="role-btn" data-role="student" onclick="selectRole('student', this)">
-            <i class="fa-solid fa-user-graduate d-block mb-1 fs-5"></i> Student
+        <div class="divider-text" style="text-align:left; font-size:0.72rem; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:10px;">Select Your Role</div>
+        <div class="role-selector mb-4">
+          <label class="role-option">
+            <input type="radio" name="role" value="admin" id="roleAdmin"
+              {% if request.args.get('role') == 'admin' %}checked{% endif %}>
+            <span class="role-label">
+              <i class="fa-solid fa-shield-halved" style="color:var(--text-muted);"></i>
+              <span>Admin</span>
+            </span>
+          </label>
+          <label class="role-option">
+            <input type="radio" name="role" value="lecturer" id="roleLecturer"
+              {% if request.args.get('role') == 'lecturer' %}checked{% elif request.args.get('role') != 'admin' and request.args.get('role') != 'student' %}{% endif %}>
+            <span class="role-label">
+              <i class="fa-solid fa-chalkboard-user" style="color:var(--text-muted);"></i>
+              <span>Lecturer</span>
+            </span>
+          </label>
+          <label class="role-option">
+            <input type="radio" name="role" value="student" id="roleStudent"
+              {% if request.args.get('role') == 'student' %}checked{% endif %}>
+            <span class="role-label">
+              <i class="fa-solid fa-graduation-cap" style="color:var(--text-muted);"></i>
+              <span>Student</span>
+            </span>
+          </label>
+        </div>
+
+        <!-- Username -->
+        <label class="form-label-glass" for="username">Username</label>
+        <div class="input-group-glass">
+          <span class="input-icon"><i class="fa-solid fa-user"></i></span>
+          <input type="text" class="form-glass" id="username" name="username"
+            placeholder="Enter your username" required autocomplete="username"
+            value="{{ request.form.get('username', '') }}">
+        </div>
+
+        <!-- Password -->
+        <label class="form-label-glass" for="password">Password</label>
+        <div class="input-group-glass">
+          <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+          <input type="password" class="form-glass has-right-icon" id="password" name="password"
+            placeholder="Enter your password" required autocomplete="current-password">
+          <button type="button" class="input-icon-right" id="togglePwd" aria-label="Toggle password visibility">
+            <i class="fa-solid fa-eye" id="pwdIcon"></i>
           </button>
         </div>
 
-        <!-- Login Form -->
-        <form method="POST" action="{{ url_for('auth.login') }}" id="loginForm">
-          <input type="hidden" name="role" id="selectedRole" value="admin">
+        <!-- Remember me -->
+        <div class="remember-row">
+          <label class="check-glass">
+            <input type="checkbox" name="remember" id="remember">
+            <span>Remember me</span>
+          </label>
+        </div>
 
-          <!-- Flash Messages -->
-          {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}{% for cat, msg in messages %}
-              <div class="alert alert-{{ cat }} py-2 px-3 small mb-3 rounded-3" style="background:rgba(220,38,38,0.1);border-color:rgba(220,38,38,0.3);color:#fca5a5;">
-                <i class="fa-solid fa-exclamation-circle me-1"></i>{{ msg }}
-              </div>
-            {% endfor %}{% endif %}
-          {% endwith %}
+        <!-- Submit -->
+        <button type="submit" class="login-btn" id="loginBtn">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          Sign In
+        </button>
 
-          <div class="mb-3">
-            <label class="form-label text-muted small fw-semibold" for="username">
-              <i class="fa-solid fa-user me-1"></i> Username
-            </label>
-            <input type="text" id="username" name="username" class="form-control form-glass"
-                   placeholder="Enter your username" required autocomplete="username">
-          </div>
+      </form>
 
-          <div class="mb-3">
-            <label class="form-label text-muted small fw-semibold" for="password">
-              <i class="fa-solid fa-lock me-1"></i> Password
-            </label>
-            <div class="position-relative">
-              <input type="password" id="password" name="password" class="form-control form-glass pe-5"
-                     placeholder="Enter your password" required autocomplete="current-password">
-              <button type="button" onclick="togglePwd()" class="btn position-absolute end-0 top-50 translate-middle-y pe-3 border-0 bg-transparent text-muted" tabindex="-1">
-                <i class="fa-solid fa-eye" id="eyeIcon"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="remember" id="remember"
-                     style="background-color:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);">
-              <label class="form-check-label text-muted small" for="remember">Remember me</label>
-            </div>
-            <a href="{{ url_for('auth.recovery') }}" class="text-muted small text-decoration-none" style="color:#38bdf8!important;">Forgot password?</a>
-          </div>
-
-          <button type="submit" class="btn btn-custom btn-primary-gradient w-100 py-3">
-            <i class="fa-solid fa-right-to-bracket me-2"></i> Sign In
-          </button>
-        </form>
-
-        <div class="divider">Secure Authentication</div>
-        <p class="text-center text-muted mb-3" style="font-size:0.75rem;">
-          🔒 Protected by PBKDF2-SHA256 password hashing
-        </p>
-        <a href="{{ url_for('auth.signup') }}" class="btn btn-outline-secondary w-100 btn-sm">
-          <i class="fa-solid fa-user-plus me-1"></i> Create New Account
+      <!-- Back to portals -->
+      <div class="text-center">
+        <a href="{{ url_for('index') }}" class="back-link">
+          <i class="fa-solid fa-arrow-left fa-sm"></i> Back to Portal Selection
         </a>
       </div>
+
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Set role from query param
-    const params = new URLSearchParams(window.location.search);
-    const roleParam = params.get('role');
-    if (roleParam) {
-      const btn = document.querySelector(`[data-role="${roleParam}"]`);
-      if (btn) selectRole(roleParam, btn);
-    } else {
-      // Default to admin
-      selectRole('admin', document.querySelector('[data-role="admin"]'));
+    // Toggle password visibility
+    const togglePwd = document.getElementById('togglePwd');
+    const pwdInput = document.getElementById('password');
+    const pwdIcon = document.getElementById('pwdIcon');
+    if (togglePwd) {
+      togglePwd.addEventListener('click', () => {
+        const isHidden = pwdInput.type === 'password';
+        pwdInput.type = isHidden ? 'text' : 'password';
+        pwdIcon.className = isHidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+      });
     }
 
-    function selectRole(role, btn) {
-      document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('selectedRole').value = role;
-    }
-
-    function togglePwd() {
-      const pwd = document.getElementById('password');
-      const icon = document.getElementById('eyeIcon');
-      if (pwd.type === 'password') {
-        pwd.type = 'text';
-        icon.className = 'fa-solid fa-eye-slash';
-      } else {
-        pwd.type = 'password';
-        icon.className = 'fa-solid fa-eye';
+    // Pre-select role from URL param
+    (function() {
+      const role = new URLSearchParams(window.location.search).get('role');
+      if (role) {
+        const radio = document.querySelector(`input[name="role"][value="${role}"]`);
+        if (radio) radio.checked = true;
       }
-    }
+      // Default to student if none checked
+      const checked = document.querySelector('input[name="role"]:checked');
+      if (!checked) {
+        const studentRadio = document.getElementById('roleStudent');
+        if (studentRadio) studentRadio.checked = true;
+      }
+    })();
   </script>
 </body>
 </html>

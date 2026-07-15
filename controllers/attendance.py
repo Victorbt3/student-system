@@ -2,9 +2,12 @@ import base64
 from datetime import datetime
 from flask import Blueprint, request, jsonify
 from flask_login import login_required
+import numpy as np
+import cv2
 from models import db, AttendanceSession, AttendanceRecord, Student
 from services import FaceRecognitionService
 from config import Config
+
 
 attendance_bp = Blueprint('attendance', __name__, url_prefix='/attendance')
 

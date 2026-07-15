@@ -1,93 +1,134 @@
-{% extends "base.html" %}
-{% block title %}Manage Lecturers — Admin{% endblock %}
-{% block header_title %}<i class="fa-solid fa-chalkboard-user me-2"></i>Lecturer Management{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Manage Lecturers — Smart Attendance{% endblock %}
+{% block header_title %}Lecturer Management{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div>
-    <h5 class="mb-1">All Lecturers <span class="badge ms-2" style="background:var(--secondary-gradient);font-size:0.75rem;">{{ lecturers|length }}</span></h5>
-    <p class="text-muted small mb-0">Manage teaching staff records</p>
-  </div>
-  <button class="btn btn-custom btn-secondary-gradient" data-bs-toggle="modal" data-bs-target="#addLecturerModal">
-    <i class="fa-solid fa-user-plus me-2"></i>Add Lecturer
-  </button>
-</div>
-
 <div class="glass-panel">
+  <div class="section-header mb-4">
+    <div>
+      <h3 class="section-title">Teaching Staff</h3>
+      <p class="section-sub">Manage lecturer accounts and department assignments</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      <input type="text" id="searchInput" class="form-glass" placeholder="Search lecturers..." onkeyup="filterTable()" style="width: 250px;">
+      <button class="btn-custom btn-primary-gradient" data-bs-toggle="modal" data-bs-target="#addLecturerModal">
+        <i class="fa-solid fa-user-plus"></i> Add Lecturer
+      </button>
+    </div>
+  </div>
+
   <div class="table-responsive">
-    <table class="table custom-table mb-0">
+    <table class="custom-table" id="lecturersTable">
       <thead>
         <tr>
-          <th>#</th><th>Lecturer</th><th>Staff No.</th><th>Department</th><th>Phone</th><th>Courses</th><th>Actions</th>
+          <th>Lecturer</th>
+          <th>Staff No</th>
+          <th>Faculty</th>
+          <th>Department</th>
+          <th>Contact</th>
+          <th class="text-end">Actions</th>
         </tr>
       </thead>
       <tbody>
-        {% for lec in lecturers %}
+        {% for lecturer in lecturers %}
         <tr>
-          <td class="text-muted small">{{ loop.index }}</td>
           <td>
             <div class="d-flex align-items-center gap-3">
-              <img src="https://ui-avatars.com/api/?name={{ lec.full_name|urlencode }}&background=4f46e5&color=fff&rounded=true&size=40" class="profile-avatar" alt="{{ lec.full_name }}">
+              <img src="https://ui-avatars.com/api/?name={{ lecturer.user.username }}&background=1d4ed8&color=fff&rounded=true" class="avatar avatar-md">
               <div>
-                <div class="fw-semibold text-white">{{ lec.full_name }}</div>
-                <div class="text-muted small">{{ lec.user.email }}</div>
+                <div class="fw-600">{{ lecturer.full_name }}</div>
+                <div class="text-xs text-muted">{{ lecturer.user.email }}</div>
               </div>
             </div>
           </td>
-          <td><code style="color:#a78bfa;background:rgba(124,58,237,0.1);padding:3px 8px;border-radius:6px;">{{ lec.staff_number }}</code></td>
-          <td class="text-muted small">{{ lec.department }}</td>
-          <td class="text-muted small">{{ lec.phone_number or '—' }}</td>
-          <td><span class="badge" style="background:rgba(56,189,248,0.15);color:#38bdf8;">{{ lec.courses|length }} course(s)</span></td>
-          <td>
-            <div class="d-flex gap-2">
-              <button class="btn btn-sm" style="background:rgba(167,139,250,0.1);color:#a78bfa;border:1px solid rgba(167,139,250,0.2);"
-                      data-bs-toggle="modal" data-bs-target="#editLecModal{{ lec.id }}">
-                <i class="fa-solid fa-pen"></i>
-              </button>
-              <form method="POST" action="{{ url_for('admin.delete_lecturer', id=lec.id) }}"
-                    onsubmit="return confirm('Delete {{ lec.full_name }}?')">
-                <button type="submit" class="btn btn-sm" style="background:rgba(220,38,38,0.1);color:#fb7185;border:1px solid rgba(220,38,38,0.2);">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </form>
-            </div>
+          <td><span class="badge-pill badge-gray">{{ lecturer.staff_number }}</span></td>
+          <td>{{ lecturer.faculty }}</td>
+          <td>{{ lecturer.department }}</td>
+          <td><span class="text-sm text-secondary">{{ lecturer.phone_number }}</span></td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-ghost me-1" data-bs-toggle="modal" data-bs-target="#editLecturerModal{{ lecturer.id }}" title="Edit">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="btn btn-sm btn-ghost text-danger" data-bs-toggle="modal" data-bs-target="#deleteLecturerModal{{ lecturer.id }}" title="Delete">
+              <i class="fa-solid fa-trash"></i>
+            </button>
           </td>
         </tr>
+
         <!-- Edit Modal -->
-        <div class="modal fade" id="editLecModal{{ lec.id }}" tabindex="-1">
-          <div class="modal-dialog">
+        <div class="modal fade" id="editLecturerModal{{ lecturer.id }}" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content modal-content-glass">
               <div class="modal-header modal-header-glass">
-                <h5 class="modal-title">Edit: {{ lec.full_name }}</h5>
+                <h5 class="modal-title section-title mb-0">Edit Lecturer: {{ lecturer.full_name }}</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
               </div>
-              <form method="POST" action="{{ url_for('admin.edit_lecturer', id=lec.id) }}">
+              <form method="POST" action="{{ url_for('admin.edit_lecturer', id=lecturer.id) }}">
                 <div class="modal-body p-4">
                   <div class="row g-3">
-                    <div class="col-12"><label class="form-label text-muted small">Full Name</label>
-                      <input type="text" name="full_name" class="form-control form-glass" value="{{ lec.full_name }}" required></div>
-                    <div class="col-12"><label class="form-label text-muted small">Email</label>
-                      <input type="email" name="email" class="form-control form-glass" value="{{ lec.user.email }}" required></div>
-                    <div class="col-md-6"><label class="form-label text-muted small">Faculty</label>
-                      <input type="text" name="faculty" class="form-control form-glass" value="{{ lec.faculty }}" required></div>
-                    <div class="col-md-6"><label class="form-label text-muted small">Department</label>
-                      <input type="text" name="department" class="form-control form-glass" value="{{ lec.department }}" required></div>
-                    <div class="col-12"><label class="form-label text-muted small">Phone</label>
-                      <input type="text" name="phone_number" class="form-control form-glass" value="{{ lec.phone_number or '' }}"></div>
+                    <div class="col-md-6">
+                      <label class="form-label-glass">Full Name</label>
+                      <input type="text" name="full_name" class="form-glass" value="{{ lecturer.full_name }}" required>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label-glass">Email Address</label>
+                      <input type="email" name="email" class="form-glass" value="{{ lecturer.user.email }}" required>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label-glass">Staff Number</label>
+                      <input type="text" name="staff_number" class="form-glass" value="{{ lecturer.staff_number }}" required>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label-glass">Faculty</label>
+                      <input type="text" name="faculty" class="form-glass" value="{{ lecturer.faculty }}" required>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label-glass">Department</label>
+                      <input type="text" name="department" class="form-glass" value="{{ lecturer.department }}" required>
+                    </div>
+                    <div class="col-md-12">
+                      <label class="form-label-glass">Phone Number</label>
+                      <input type="text" name="phone_number" class="form-glass" value="{{ lecturer.phone_number }}" required>
+                    </div>
                   </div>
                 </div>
                 <div class="modal-footer modal-footer-glass">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                  <button type="submit" class="btn btn-custom btn-secondary-gradient">Save Changes</button>
+                  <button type="button" class="btn-custom btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" class="btn-custom btn-primary-gradient">Save Changes</button>
                 </div>
               </form>
             </div>
           </div>
         </div>
+
+        <!-- Delete Modal -->
+        <div class="modal fade" id="deleteLecturerModal{{ lecturer.id }}" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-glass">
+              <div class="modal-header modal-header-glass">
+                <h5 class="modal-title section-title mb-0 text-danger">Delete Lecturer</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body p-4">
+                <p>Are you sure you want to permanently delete <strong>{{ lecturer.full_name }}</strong> ({{ lecturer.staff_number }})?</p>
+                <p class="text-muted text-sm">This will also delete all their assigned courses and attendance records.</p>
+              </div>
+              <div class="modal-footer modal-footer-glass">
+                <button type="button" class="btn-custom btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('admin.delete_lecturer', id=lecturer.id) }}">
+                  <button type="submit" class="btn-custom btn-danger-gradient">Delete Permanently</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
         {% else %}
-        <tr><td colspan="7" class="text-center text-muted py-5">
-          <i class="fa-solid fa-chalkboard-user fa-2x mb-3 d-block opacity-25"></i>No lecturers registered yet.
-        </td></tr>
+        <tr>
+          <td colspan="6" class="text-center py-5 text-muted">
+            <i class="fa-solid fa-user-xmark fs-2 mb-3 d-block opacity-25"></i>
+            No lecturers found. Add one to get started.
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
@@ -96,39 +137,76 @@
 
 <!-- Add Lecturer Modal -->
 <div class="modal fade" id="addLecturerModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content modal-content-glass">
       <div class="modal-header modal-header-glass">
-        <h5 class="modal-title"><i class="fa-solid fa-user-plus me-2"></i>Register New Lecturer</h5>
+        <h5 class="modal-title section-title mb-0">Register New Lecturer</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" action="{{ url_for('admin.lecturers') }}">
         <div class="modal-body p-4">
           <div class="row g-3">
-            <div class="col-md-6"><label class="form-label text-muted small">Username *</label>
-              <input type="text" name="username" class="form-control form-glass" required></div>
-            <div class="col-md-6"><label class="form-label text-muted small">Email *</label>
-              <input type="email" name="email" class="form-control form-glass" required></div>
-            <div class="col-md-6"><label class="form-label text-muted small">Password (default: lecturer123)</label>
-              <input type="password" name="password" class="form-control form-glass"></div>
-            <div class="col-md-6"><label class="form-label text-muted small">Staff Number *</label>
-              <input type="text" name="staff_number" class="form-control form-glass" placeholder="LCT001" required></div>
-            <div class="col-12"><label class="form-label text-muted small">Full Name *</label>
-              <input type="text" name="full_name" class="form-control form-glass" required></div>
-            <div class="col-md-6"><label class="form-label text-muted small">Faculty *</label>
-              <input type="text" name="faculty" class="form-control form-glass" required></div>
-            <div class="col-md-6"><label class="form-label text-muted small">Department *</label>
-              <input type="text" name="department" class="form-control form-glass" required></div>
-            <div class="col-12"><label class="form-label text-muted small">Phone</label>
-              <input type="tel" name="phone_number" class="form-control form-glass"></div>
+            <div class="col-md-6">
+              <label class="form-label-glass">Full Name</label>
+              <input type="text" name="full_name" class="form-glass" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-glass">Staff Number</label>
+              <input type="text" name="staff_number" class="form-glass" placeholder="e.g. STF-2026" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-glass">Username (Login)</label>
+              <input type="text" name="username" class="form-glass" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-glass">Email Address</label>
+              <input type="email" name="email" class="form-glass" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-glass">Temporary Password</label>
+              <input type="password" name="password" class="form-glass" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-glass">Phone Number</label>
+              <input type="text" name="phone_number" class="form-glass" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-glass">Faculty</label>
+              <input type="text" name="faculty" class="form-glass" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-glass">Department</label>
+              <input type="text" name="department" class="form-glass" required>
+            </div>
           </div>
         </div>
         <div class="modal-footer modal-footer-glass">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-custom btn-secondary-gradient"><i class="fa-solid fa-save me-1"></i>Register Lecturer</button>
+          <button type="button" class="btn-custom btn-ghost" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-custom btn-success-gradient">Register Lecturer</button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterTable() {
+  const input = document.getElementById("searchInput");
+  const filter = input.value.toLowerCase();
+  const table = document.getElementById("lecturersTable");
+  const tr = table.getElementsByTagName("tr");
+
+  for (let i = 1; i < tr.length; i++) {
+    const textContent = tr[i].textContent || tr[i].innerText;
+    if (textContent.toLowerCase().indexOf(filter) > -1) {
+      tr[i].style.display = "";
+    } else {
+      tr[i].style.display = "none";
+    }
+  }
+}
+</script>
 {% endblock %}

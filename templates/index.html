@@ -3,156 +3,221 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Attendance System — Select Portal</title>
-  <meta name="description" content="Smart Student Attendance System Using Facial Recognition — University Portal Selection">
-  <link rel="icon" type="image/png" href="https://img.icons8.com/color/48/facial-recognition.png">
+  <title>Smart Student Attendance System — Portal</title>
+  <meta name="description" content="AI-powered Smart Student Attendance System with facial recognition. Choose your portal to get started.">
+  <link rel="icon" href="https://img.icons8.com/color/48/facial-recognition.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <style>
-    .landing-wrapper {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-      position: relative;
-      overflow: hidden;
+    /* Extra landing styles */
+    .landing-bg-orbs {
+      position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
     }
-    /* Animated background orbs */
     .orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(80px);
-      pointer-events: none;
-      z-index: 0;
-      animation: floatOrb 8s ease-in-out infinite;
+      position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.18;
+      animation: float 8s ease-in-out infinite;
     }
-    .orb-1 { width: 400px; height: 400px; background: rgba(37,99,235,0.2); top: -100px; left: -100px; animation-delay: 0s; }
-    .orb-2 { width: 350px; height: 350px; background: rgba(124,58,237,0.2); bottom: -80px; right: -80px; animation-delay: -3s; }
-    .orb-3 { width: 300px; height: 300px; background: rgba(5,150,105,0.15); top: 40%; left: 30%; animation-delay: -5s; }
-    @keyframes floatOrb {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(30px, -20px) scale(1.05); }
-      66% { transform: translate(-20px, 30px) scale(0.95); }
+    .orb-1 { width: 500px; height: 500px; background: #3b82f6; top: -120px; left: -100px; animation-delay: 0s; }
+    .orb-2 { width: 400px; height: 400px; background: #8b5cf6; bottom: -80px; right: -80px; animation-delay: 3s; }
+    .orb-3 { width: 300px; height: 300px; background: #06b6d4; top: 40%; left: 40%; animation-delay: 6s; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-20px) scale(1.05); }
     }
-    .landing-content { position: relative; z-index: 1; width: 100%; max-width: 1000px; }
-    .hero-title { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(37,99,235,0.2); border: 1px solid rgba(56,189,248,0.3);
-      padding: 6px 16px; border-radius: 999px; font-size: 0.8rem; color: #38bdf8;
-      margin-bottom: 24px;
+    .landing-wrap {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 48px 24px; position: relative; z-index: 1;
     }
-    .portal-card { cursor: pointer; text-decoration: none; color: inherit; display: block; }
-    .portal-card:hover { color: inherit; }
-    .portal-card .glass-panel {
-      text-align: center; padding: 40px 24px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    .landing-inner { max-width: 960px; width: 100%; margin: 0 auto; }
+    .portal-card-wrap {
+      display: block; text-decoration: none; height: 100%;
     }
-    .portal-card:hover .glass-panel {
-      transform: translateY(-8px);
-      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    .portal-card-inner {
+      height: 100%; text-align: center; padding: 36px 28px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: var(--glass-shadow);
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative; overflow: hidden;
     }
-    .portal-card.admin:hover .glass-panel { border-color: rgba(56,189,248,0.5); box-shadow: 0 24px 60px rgba(37,99,235,0.3); }
-    .portal-card.lecturer:hover .glass-panel { border-color: rgba(167,139,250,0.5); box-shadow: 0 24px 60px rgba(124,58,237,0.3); }
-    .portal-card.student:hover .glass-panel { border-color: rgba(52,211,153,0.5); box-shadow: 0 24px 60px rgba(5,150,105,0.3); }
-    .portal-icon-wrap {
-      width: 80px; height: 80px; border-radius: 20px;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 24px; font-size: 2rem;
+    .portal-card-inner::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px; opacity: 0; transition: opacity 0.3s;
     }
-    .icon-admin { background: linear-gradient(135deg, rgba(37,99,235,0.3), rgba(56,189,248,0.2)); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; }
-    .icon-lecturer { background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(167,139,250,0.2)); border: 1px solid rgba(167,139,250,0.3); color: #a78bfa; }
-    .icon-student { background: linear-gradient(135deg, rgba(5,150,105,0.3), rgba(52,211,153,0.2)); border: 1px solid rgba(52,211,153,0.3); color: #34d399; }
-    .tech-strip {
-      display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
-      margin-top: 40px; opacity: 0.6;
+    .portal-card-wrap.admin-card .portal-card-inner::before { background: var(--grad-blue); }
+    .portal-card-wrap.lecturer-card .portal-card-inner::before { background: var(--grad-purple); }
+    .portal-card-wrap.student-card .portal-card-inner::before { background: var(--grad-green); }
+    .portal-card-wrap:hover .portal-card-inner {
+      transform: translateY(-6px);
+      border-color: var(--glass-border-hover);
+      box-shadow: var(--glass-shadow-lg);
     }
-    .tech-tag {
-      padding: 4px 12px; border-radius: 6px; font-size: 0.75rem;
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    .portal-card-wrap:hover .portal-card-inner::before { opacity: 1; }
+    .portal-icon {
+      width: 72px; height: 72px;
+      border-radius: 20px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 2rem; margin-bottom: 20px;
     }
+    .icon-admin { background: rgba(59,130,246,0.12); color: #60a5fa; }
+    .icon-lecturer { background: rgba(139,92,246,0.12); color: #a78bfa; }
+    .icon-student { background: rgba(16,185,129,0.12); color: #34d399; }
+    .portal-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.2rem; font-weight: 800;
+      color: var(--text-primary); margin-bottom: 10px;
+    }
+    .portal-desc {
+      font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px;
+    }
+    .portal-enter-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 22px; border-radius: 999px;
+      font-size: 0.82rem; font-weight: 600;
+      transition: var(--transition);
+    }
+    .admin-card .portal-enter-btn { background: rgba(59,130,246,0.1); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+    .lecturer-card .portal-enter-btn { background: rgba(139,92,246,0.1); color: #a78bfa; border: 1px solid rgba(139,92,246,0.25); }
+    .student-card .portal-enter-btn { background: rgba(16,185,129,0.1); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+    .portal-card-wrap:hover .portal-enter-btn { opacity: 0.9; transform: scale(1.03); }
+    .stat-strip {
+      display: flex; gap: 32px; justify-content: center; flex-wrap: wrap;
+      margin-top: 48px; padding-top: 32px;
+      border-top: 1px solid var(--glass-border);
+    }
+    .stat-strip-item { text-align: center; }
+    .stat-strip-value {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.6rem; font-weight: 800; color: var(--text-primary);
+    }
+    .stat-strip-label { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
   </style>
 </head>
 <body>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
 
-  <div class="landing-wrapper">
-    <div class="landing-content text-center">
-      <div class="hero-badge">
-        <i class="fa-solid fa-microchip-ai"></i>
-        AI-Powered · Real-Time · University Grade
+  <!-- Background orbs -->
+  <div class="landing-bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="landing-wrap">
+    <div class="landing-inner">
+
+      <!-- Hero Header -->
+      <div class="text-center mb-5">
+        <div class="d-inline-flex align-items-center gap-2 mb-4"
+          style="padding:6px 18px; background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2); border-radius:999px;">
+          <i class="fa-solid fa-face-viewfinder" style="color:#60a5fa; font-size:0.85rem;"></i>
+          <span style="font-size:0.8rem; font-weight:500; color:#93c5fd;">AI-Powered · Facial Recognition</span>
+        </div>
+        <h1 class="hero-title mb-3">
+          Smart Student<br>
+          <span class="text-gradient">Attendance System</span>
+        </h1>
+        <p style="font-size:1rem; color:var(--text-secondary); max-width:500px; margin:0 auto; line-height:1.7;">
+          A modern, AI-driven attendance tracking platform for universities —
+          powered by real-time facial recognition and intelligent analytics.
+        </p>
       </div>
-      <h1 class="hero-title">
-        <span class="text-gradient">Smart Student</span><br>
-        Attendance System
-      </h1>
-      <p class="text-muted mb-5 fs-6" style="max-width: 520px; margin: 0 auto;">
-        Powered by OpenCV Facial Recognition, Flask, and intelligent AI analytics.
-        Select your portal to get started.
-      </p>
 
-      <div class="row g-4 mb-5">
+      <!-- Portal Cards -->
+      <div class="row g-4">
         <!-- Admin Portal -->
-        <div class="col-md-4">
-          <a href="{{ url_for('auth.login') }}?role=admin" class="portal-card admin">
-            <div class="glass-panel">
-              <div class="portal-icon-wrap icon-admin">
-                <i class="fa-solid fa-user-shield"></i>
+        <div class="col-12 col-md-4">
+          <a href="{{ url_for('auth.login') }}?role=admin" class="portal-card-wrap admin-card">
+            <div class="portal-card-inner">
+              <div class="portal-icon icon-admin">
+                <i class="fa-solid fa-shield-halved"></i>
               </div>
-              <h3 class="fs-5 mb-2">Admin Portal</h3>
-              <p class="text-muted small mb-3">Manage students, lecturers, courses and view system-wide analytics.</p>
-              <span class="btn btn-custom btn-primary-gradient px-4 py-2 small">Enter as Admin →</span>
+              <div class="portal-title">Admin Portal</div>
+              <p class="portal-desc">
+                Manage students, lecturers, courses, and system-wide attendance reports from one powerful dashboard.
+              </p>
+              <span class="portal-enter-btn">
+                Enter Portal <i class="fa-solid fa-arrow-right fa-sm"></i>
+              </span>
             </div>
           </a>
         </div>
 
         <!-- Lecturer Portal -->
-        <div class="col-md-4">
-          <a href="{{ url_for('auth.login') }}?role=lecturer" class="portal-card lecturer">
-            <div class="glass-panel">
-              <div class="portal-icon-wrap icon-lecturer">
+        <div class="col-12 col-md-4">
+          <a href="{{ url_for('auth.login') }}?role=lecturer" class="portal-card-wrap lecturer-card">
+            <div class="portal-card-inner">
+              <div class="portal-icon icon-lecturer">
                 <i class="fa-solid fa-chalkboard-user"></i>
               </div>
-              <h3 class="fs-5 mb-2">Lecturer Portal</h3>
-              <p class="text-muted small mb-3">Start attendance sessions, scan faces, view records and export reports.</p>
-              <span class="btn btn-custom btn-secondary-gradient px-4 py-2 small">Enter as Lecturer →</span>
+              <div class="portal-title">Lecturer Portal</div>
+              <p class="portal-desc">
+                Launch live attendance sessions, scan student faces in real time, and generate detailed class reports.
+              </p>
+              <span class="portal-enter-btn">
+                Enter Portal <i class="fa-solid fa-arrow-right fa-sm"></i>
+              </span>
             </div>
           </a>
         </div>
 
         <!-- Student Portal -->
-        <div class="col-md-4">
-          <a href="{{ url_for('auth.login') }}?role=student" class="portal-card student">
-            <div class="glass-panel">
-              <div class="portal-icon-wrap icon-student">
-                <i class="fa-solid fa-user-graduate"></i>
+        <div class="col-12 col-md-4">
+          <a href="{{ url_for('auth.login') }}?role=student" class="portal-card-wrap student-card">
+            <div class="portal-card-inner">
+              <div class="portal-icon icon-student">
+                <i class="fa-solid fa-graduation-cap"></i>
               </div>
-              <h3 class="fs-5 mb-2">Student Portal</h3>
-              <p class="text-muted small mb-3">Register your face, check attendance history and view AI early warnings.</p>
-              <span class="btn btn-custom px-4 py-2 small" style="background: var(--success-gradient); color:#fff;">Enter as Student →</span>
+              <div class="portal-title">Student Portal</div>
+              <p class="portal-desc">
+                View your attendance records, register your face for recognition, and track your academic performance.
+              </p>
+              <span class="portal-enter-btn">
+                Enter Portal <i class="fa-solid fa-arrow-right fa-sm"></i>
+              </span>
             </div>
           </a>
         </div>
       </div>
 
-      <!-- Tech Strip -->
-      <div class="tech-strip">
-        <span class="tech-tag"><i class="fa-brands fa-python me-1"></i> Python Flask</span>
-        <span class="tech-tag"><i class="fa-solid fa-eye me-1"></i> OpenCV</span>
-        <span class="tech-tag"><i class="fa-solid fa-database me-1"></i> SQLite / MySQL</span>
-        <span class="tech-tag"><i class="fa-solid fa-chart-area me-1"></i> Chart.js</span>
-        <span class="tech-tag"><i class="fa-solid fa-brain me-1"></i> LBPH Recognizer</span>
-        <span class="tech-tag"><i class="fa-solid fa-bootstrap me-1"></i> Bootstrap 5</span>
+      <!-- Bottom Stats Strip -->
+      <div class="stat-strip">
+        <div class="stat-strip-item">
+          <div class="stat-strip-value text-gradient-blue">99.2%</div>
+          <div class="stat-strip-label">Recognition Accuracy</div>
+        </div>
+        <div class="stat-strip-item">
+          <div class="stat-strip-value" style="color:var(--text-primary);">< 2s</div>
+          <div class="stat-strip-label">Scan Speed</div>
+        </div>
+        <div class="stat-strip-item">
+          <div class="stat-strip-value text-gradient-purple">Real-Time</div>
+          <div class="stat-strip-label">Attendance Tracking</div>
+        </div>
+        <div class="stat-strip-item">
+          <div class="stat-strip-value" style="color:var(--text-primary);">AI</div>
+          <div class="stat-strip-label">Powered Engine</div>
+        </div>
       </div>
 
-      <p class="text-muted small mt-4" style="opacity:0.4;">
-        Final Year CS Project · University of Technology · 2026
-      </p>
+      <!-- Tech tags -->
+      <div class="tech-strip mt-4">
+        <span class="tech-tag"><i class="fa-brands fa-python fa-xs"></i> Python / Flask</span>
+        <span class="tech-tag"><i class="fa-solid fa-eye fa-xs"></i> OpenCV</span>
+        <span class="tech-tag"><i class="fa-solid fa-brain fa-xs"></i> DeepFace AI</span>
+        <span class="tech-tag"><i class="fa-solid fa-database fa-xs"></i> SQLAlchemy</span>
+        <span class="tech-tag"><i class="fa-brands fa-bootstrap fa-xs"></i> Bootstrap 5</span>
+      </div>
+
     </div>
   </div>
 

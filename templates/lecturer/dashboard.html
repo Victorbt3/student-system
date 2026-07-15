@@ -1,129 +1,68 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block title %}Lecturer Dashboard — Smart Attendance{% endblock %}
-{% block header_title %}<i class="fa-solid fa-chart-line me-2 text-gradient"></i>Lecturer Dashboard{% endblock %}
+{% block header_title %}Lecturer Dashboard{% endblock %}
 
 {% block content %}
-<!-- Welcome Banner -->
-<div class="glass-panel mb-4" style="background:linear-gradient(135deg,rgba(79,70,229,0.2),rgba(124,58,237,0.1));">
-  <div class="row align-items-center">
-    <div class="col">
-      <h4 class="mb-1">Welcome back, <span class="text-gradient-purple">{{ lecturer.full_name }}</span> 👋</h4>
-      <p class="text-muted mb-0 small">{{ lecturer.department }} &mdash; {{ lecturer.faculty }}</p>
+<div class="row g-4 mb-5">
+  <div class="col-md-4">
+    <div class="stat-card blue">
+      <div class="stat-icon"><i class="fa-solid fa-book-open"></i></div>
+      <div class="stat-value">{{ courses | length }}</div>
+      <div class="stat-label">Assigned Courses</div>
     </div>
-    <div class="col-auto">
-      {% if active_session %}
-        <a href="{{ url_for('lecturer.live_scan', session_id=active_session.id) }}" class="btn btn-custom" style="background:var(--success-gradient);color:#fff;">
-          <span style="width:8px;height:8px;background:#fff;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite;margin-right:8px;"></span>
-          Live Session Active
-        </a>
-      {% else %}
-        <a href="{{ url_for('lecturer.start_session') }}" class="btn btn-custom btn-primary-gradient">
-          <i class="fa-solid fa-camera me-2"></i>Start Attendance
-        </a>
-      {% endif %}
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card purple">
+      <div class="stat-icon"><i class="fa-solid fa-clipboard-user"></i></div>
+      <div class="stat-value">{{ sessions | length }}</div>
+      <div class="stat-label">Sessions Conducted</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card green">
+      <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+      <div class="stat-value">{{ students | length }}</div>
+      <div class="stat-label">Total Enrolled Students</div>
     </div>
   </div>
 </div>
 
-<!-- Stats Row -->
-<div class="row g-4 mb-4">
-  <div class="col-md-4">
-    <div class="glass-panel stat-card primary">
-      <p class="text-muted small mb-1"><i class="fa-solid fa-book-open me-1"></i> My Courses</p>
-      <div class="stat-num text-gradient">{{ total_courses }}</div>
-      <i class="fa-solid fa-book-open stat-icon"></i>
+<div class="glass-panel">
+  <div class="section-header">
+    <div>
+      <h3 class="section-title">My Courses</h3>
+      <p class="section-sub">Select a course to start an attendance session</p>
     </div>
+    <a href="{{ url_for('lecturer.start_session') }}" class="btn-custom btn-primary-gradient">
+      <i class="fa-solid fa-camera"></i> Start New Scan
+    </a>
   </div>
-  <div class="col-md-4">
-    <div class="glass-panel stat-card success">
-      <p class="text-muted small mb-1"><i class="fa-solid fa-percent me-1"></i> Avg. Attendance</p>
-      <div class="stat-num" style="background:var(--success-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ overall_rate }}%</div>
-      <i class="fa-solid fa-chart-line stat-icon"></i>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="glass-panel stat-card danger">
-      <p class="text-muted small mb-1"><i class="fa-solid fa-triangle-exclamation me-1"></i> At-Risk Students</p>
-      <div class="stat-num" style="background:var(--danger-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ at_risk_students|length }}</div>
-      <i class="fa-solid fa-triangle-exclamation stat-icon"></i>
-    </div>
-  </div>
-</div>
 
-<div class="row g-4">
-  <!-- My Courses -->
-  <div class="col-md-5">
-    <div class="glass-panel h-100">
-      <h6 class="text-muted mb-3"><i class="fa-solid fa-book-open me-1"></i> My Courses</h6>
-      <div class="d-flex flex-column gap-3">
-        {% for course in courses %}
-        <div style="background:rgba(255,255,255,0.03);border:1px solid var(--panel-border);border-radius:12px;padding:16px;" class="d-flex align-items-center justify-content-between">
-          <div>
-            <div class="fw-semibold text-white">{{ course.course_code }}</div>
-            <div class="text-muted small">{{ course.course_title }}</div>
-            <div class="text-muted small mt-1"><i class="fa-solid fa-users me-1"></i>{{ course.students|length }} students</div>
-          </div>
-          <a href="{{ url_for('lecturer.start_session') }}" class="btn btn-sm btn-custom btn-primary-gradient">
-            <i class="fa-solid fa-camera"></i>
-          </a>
+  <div class="row g-4 mt-2">
+    {% for course in courses %}
+    <div class="col-md-6 col-lg-4">
+      <div class="p-4" style="background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-radius:var(--radius-lg); transition:var(--transition);">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <span class="badge-pill badge-blue">{{ course.course_code }}</span>
+          <span class="badge-pill badge-gray">{{ course.unit }} Units</span>
         </div>
-        {% else %}
-        <p class="text-muted small text-center py-3">No courses assigned yet.</p>
-        {% endfor %}
+        <h4 style="font-size:1.1rem;font-weight:700;margin-bottom:8px;">{{ course.course_title }}</h4>
+        <div class="text-sm text-secondary mb-4"><i class="fa-solid fa-users me-2"></i> {{ course.students | length }} Enrolled Students</div>
+        
+        <form action="{{ url_for('lecturer.start_session') }}" method="POST">
+          <input type="hidden" name="course_id" value="{{ course.id }}">
+          <button type="submit" class="btn-custom btn-ghost w-100 justify-content-center">
+            Select Course <i class="fa-solid fa-arrow-right ms-1"></i>
+          </button>
+        </form>
       </div>
     </div>
-  </div>
-
-  <!-- At-Risk Students -->
-  <div class="col-md-7">
-    <div class="glass-panel h-100">
-      <h6 class="text-muted mb-3"><i class="fa-solid fa-brain me-1"></i> AI: At-Risk Students</h6>
-      {% if at_risk_students %}
-      <div class="table-responsive">
-        <table class="table custom-table mb-0">
-          <thead>
-            <tr><th>Student</th><th>Course</th><th>Rate</th><th>Predicted</th><th>Status</th></tr>
-          </thead>
-          <tbody>
-            {% for s in at_risk_students %}
-            <tr>
-              <td>
-                <div class="fw-semibold text-white small">{{ s.name }}</div>
-                <div class="text-muted" style="font-size:0.7rem;">{{ s.matric }}</div>
-              </td>
-              <td><code style="color:#38bdf8;background:rgba(56,189,248,0.1);padding:2px 6px;border-radius:4px;font-size:0.75rem;">{{ s.course_code }}</code></td>
-              <td>
-                <div class="d-flex align-items-center gap-2">
-                  <div style="flex:1;background:rgba(255,255,255,0.05);border-radius:999px;height:6px;min-width:60px;">
-                    <div style="height:6px;border-radius:999px;width:{{ s.attendance_rate|default(0)|int }}%;background:{{ 'var(--danger-gradient)' if (s.attendance_rate|default(0)|int) < 60 else 'var(--warning-gradient)' }};"></div>
-                  </div>
-                  <span class="text-white small">{{ s.attendance_rate|default(0) }}%</span>
-                </div>
-              </td>
-              <td class="text-muted small">{{ s.predicted_final_rate|default(0) }}%</td>
-              <td>
-                <span class="risk-indicator {{ 'critical' if s.status == 'Critical' else 'warning' }}">{{ s.status }}</span>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      {% else %}
-      <div class="text-center py-5">
-        <i class="fa-solid fa-circle-check fa-3x mb-3" style="color:#34d399;opacity:0.5;"></i>
-        <p class="text-muted">All students are on track. No early warnings.</p>
-      </div>
-      {% endif %}
+    {% else %}
+    <div class="col-12 text-center py-5 text-muted">
+      <i class="fa-solid fa-book-open-reader fs-2 mb-3 d-block opacity-25"></i>
+      No courses assigned to you yet. Contact an administrator.
     </div>
+    {% endfor %}
   </div>
 </div>
-
-<style>
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-</style>
-{% endblock %}
-
-{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 {% endblock %}

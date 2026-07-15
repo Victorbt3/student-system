@@ -1,133 +1,136 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block title %}Admin Dashboard — Smart Attendance{% endblock %}
-{% block header_title %}<i class="fa-solid fa-chart-line me-2 text-gradient"></i>Admin Dashboard{% endblock %}
-
-{% block styles %}
-<style>
-  .stat-card { transition: transform 0.3s ease; }
-  .stat-card:hover { transform: translateY(-4px); }
-  .stat-num { font-family:'Outfit',sans-serif; font-size:2.5rem; font-weight:700; line-height:1; }
-  .progress-ring { font-size:3rem; font-weight:700; font-family:'Outfit',sans-serif; }
-</style>
-{% endblock %}
+{% block header_title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<div class="row g-4 mb-4">
-
-  <!-- Stat Cards -->
-  <div class="col-6 col-xl-3">
-    <div class="glass-panel stat-card primary h-100">
-      <p class="text-muted small mb-2"><i class="fa-solid fa-graduation-cap me-1"></i> Total Students</p>
-      <div class="stat-num text-gradient">{{ total_students }}</div>
-      <p class="text-muted small mt-2 mb-0">Registered in system</p>
-      <i class="fa-solid fa-graduation-cap stat-icon"></i>
-    </div>
-  </div>
-  <div class="col-6 col-xl-3">
-    <div class="glass-panel stat-card success h-100">
-      <p class="text-muted small mb-2"><i class="fa-solid fa-chalkboard-user me-1"></i> Total Lecturers</p>
-      <div class="stat-num" style="background:var(--success-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ total_lecturers }}</div>
-      <p class="text-muted small mt-2 mb-0">Teaching staff</p>
-      <i class="fa-solid fa-chalkboard-user stat-icon"></i>
-    </div>
-  </div>
-  <div class="col-6 col-xl-3">
-    <div class="glass-panel stat-card warning h-100">
-      <p class="text-muted small mb-2"><i class="fa-solid fa-book-open me-1"></i> Total Courses</p>
-      <div class="stat-num" style="background:var(--warning-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ total_courses }}</div>
-      <p class="text-muted small mt-2 mb-0">Active courses</p>
-      <i class="fa-solid fa-book-open stat-icon"></i>
-    </div>
-  </div>
-  <div class="col-6 col-xl-3">
-    <div class="glass-panel stat-card danger h-100">
-      <p class="text-muted small mb-2"><i class="fa-solid fa-circle-dot me-1"></i> Active Sessions</p>
-      <div class="stat-num" style="background:var(--info-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ active_sessions }}</div>
-      <p class="text-muted small mt-2 mb-0">Running right now</p>
-      <i class="fa-solid fa-camera stat-icon"></i>
-    </div>
-  </div>
-</div>
-
-<div class="row g-4 mb-4">
-  <!-- Attendance Rate Gauge -->
-  <div class="col-md-4">
-    <div class="glass-panel h-100 text-center">
-      <h6 class="text-muted mb-4"><i class="fa-solid fa-gauge-high me-1"></i> Global Attendance Rate</h6>
-      <div style="position:relative;width:160px;height:160px;margin:0 auto 20px;">
-        <canvas id="gaugeChart" width="160" height="160"></canvas>
-        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);">
-          <div class="progress-ring text-gradient">{{ attendance_rate }}<span style="font-size:1rem">%</span></div>
-        </div>
-      </div>
-      <p class="text-muted small">
-        {% if attendance_rate >= 75 %}<span class="risk-indicator good">Excellent</span>
-        {% elif attendance_rate >= 60 %}<span class="risk-indicator warning">Needs Attention</span>
-        {% else %}<span class="risk-indicator critical">Critical</span>{% endif %}
-      </p>
+<div class="row g-4 mb-5">
+  <!-- Stat Card: Students -->
+  <div class="col-md-3">
+    <div class="stat-card blue">
+      <div class="stat-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+      <div class="stat-value">{{ students | length }}</div>
+      <div class="stat-label">Total Students</div>
     </div>
   </div>
 
-  <!-- Weekly Attendance Chart -->
-  <div class="col-md-8">
-    <div class="glass-panel h-100">
-      <h6 class="text-muted mb-3"><i class="fa-solid fa-chart-bar me-1"></i> Weekly Attendance Overview</h6>
-      <canvas id="weeklyChart" height="120"></canvas>
+  <!-- Stat Card: Lecturers -->
+  <div class="col-md-3">
+    <div class="stat-card purple">
+      <div class="stat-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
+      <div class="stat-value">{{ lecturers | length }}</div>
+      <div class="stat-label">Total Lecturers</div>
+    </div>
+  </div>
+
+  <!-- Stat Card: Courses -->
+  <div class="col-md-3">
+    <div class="stat-card amber">
+      <div class="stat-icon"><i class="fa-solid fa-book-open"></i></div>
+      <div class="stat-value">{{ courses | length }}</div>
+      <div class="stat-label">Active Courses</div>
+    </div>
+  </div>
+
+  <!-- Stat Card: Sessions -->
+  <div class="col-md-3">
+    <div class="stat-card cyan">
+      <div class="stat-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+      <div class="stat-value">{{ sessions | length }}</div>
+      <div class="stat-label">Total Sessions</div>
     </div>
   </div>
 </div>
 
 <div class="row g-4">
-  <!-- Department Comparison Chart -->
-  <div class="col-md-6">
+  <div class="col-lg-8">
     <div class="glass-panel h-100">
-      <h6 class="text-muted mb-3"><i class="fa-solid fa-chart-pie me-1"></i> Department Attendance</h6>
-      <canvas id="deptChart" height="200"></canvas>
+      <div class="section-header">
+        <div>
+          <h3 class="section-title">Recent Students</h3>
+          <p class="section-sub">Latest enrollments across all departments</p>
+        </div>
+        <a href="{{ url_for('admin.students') }}" class="btn-custom btn-ghost text-xs">View All</a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Matric No</th>
+              <th>Department</th>
+              <th>Face Registered</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for student in students[-5:] | reverse %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <img src="{{ url_for('static', filename='uploads/profile_pics/' + student.profile_pic) }}" class="avatar avatar-sm">
+                  <span class="fw-600">{{ student.full_name }}</span>
+                </div>
+              </td>
+              <td><span class="badge-pill badge-gray">{{ student.matric_number }}</span></td>
+              <td>{{ student.department }}</td>
+              <td>
+                {% if student.has_face_model %}
+                  <span class="badge-pill badge-green"><i class="fa-solid fa-check"></i> Yes</span>
+                {% else %}
+                  <span class="badge-pill badge-red"><i class="fa-solid fa-xmark"></i> No</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4" class="text-center py-4 text-muted">No students registered yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <!-- Quick Actions -->
-  <div class="col-md-6">
+  <div class="col-lg-4">
     <div class="glass-panel h-100">
-      <h6 class="text-muted mb-3"><i class="fa-solid fa-bolt me-1"></i> Quick Actions</h6>
-      <div class="d-grid gap-3">
-        <a href="{{ url_for('admin.students') }}" class="btn btn-custom btn-primary-gradient text-start px-4">
-          <i class="fa-solid fa-user-plus me-2"></i> Manage Students
-        </a>
-        <a href="{{ url_for('admin.lecturers') }}" class="btn btn-custom btn-secondary-gradient text-start px-4">
-          <i class="fa-solid fa-chalkboard-user me-2"></i> Manage Lecturers
-        </a>
-        <a href="{{ url_for('admin.courses') }}" class="btn btn-custom text-start px-4" style="background:var(--warning-gradient);color:#fff;">
-          <i class="fa-solid fa-book-open me-2"></i> Manage Courses
-        </a>
+      <div class="section-header">
+        <div>
+          <h3 class="section-title">System Status</h3>
+          <p class="section-sub">Database and ML models</p>
+        </div>
       </div>
+      
+      <div class="d-flex flex-column gap-3">
+        <div class="p-3" style="background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-radius:var(--radius-md);">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="text-sm fw-600 text-secondary">Face Database</span>
+            <span class="badge-pill badge-blue">Active</span>
+          </div>
+          <div class="text-xs text-muted">LBPH recognizer trained with {{ students | selectattr('has_face_model') | list | length }} students.</div>
+        </div>
 
-      <hr style="border-color:var(--panel-border);margin:24px 0;">
-      <h6 class="text-muted mb-3"><i class="fa-solid fa-circle-info me-1"></i> System Info</h6>
-      <div class="d-flex flex-column gap-2">
-        <div class="d-flex justify-content-between text-muted small">
-          <span>Database</span><span class="text-white">SQLite / MySQL</span>
+        <div class="p-3" style="background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-radius:var(--radius-md);">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="text-sm fw-600 text-secondary">Cloud Storage</span>
+            {% if "supabase" in config['SQLALCHEMY_DATABASE_URI'] or "pg8000" in config['SQLALCHEMY_DATABASE_URI'] %}
+            <span class="badge-pill badge-green">Connected</span>
+            {% else %}
+            <span class="badge-pill badge-amber">Local</span>
+            {% endif %}
+          </div>
+          <div class="text-xs text-muted">Data persistence layer operational.</div>
         </div>
-        <div class="d-flex justify-content-between text-muted small">
-          <span>Face Engine</span><span class="text-white">OpenCV LBPH</span>
-        </div>
-        <div class="d-flex justify-content-between text-muted small">
-          <span>Framework</span><span class="text-white">Python Flask 2.3</span>
-        </div>
-        <div class="d-flex justify-content-between text-muted small">
-          <span>AI Module</span><span class="risk-indicator good">Active</span>
+        
+        <div class="p-3" style="background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-radius:var(--radius-md);">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="text-sm fw-600 text-secondary">AI Analytics</span>
+            <span class="badge-pill badge-green">Ready</span>
+          </div>
+          <div class="text-xs text-muted">Early warning system active.</div>
         </div>
       </div>
     </div>
   </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="{{ url_for('static', filename='js/charts_dashboard.js') }}"></script>
-<script>
-  const attendanceRate = {{ attendance_rate }};
-  initAdminCharts(attendanceRate);
-</script>
 {% endblock %}

@@ -3,9 +3,12 @@ import base64
 from datetime import datetime
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
+import numpy as np
+import cv2
 from models import db, Student, AttendanceRecord, AttendanceSession, Course, Notification, User
 from services import FaceRecognitionService
 from config import Config
+
 
 student_bp = Blueprint('student', __name__, url_prefix='/student')
 
@@ -100,40 +103,108 @@ def register_face():
 @login_required
 def capture_face():
     auth_check = check_student()
-    if auth_check: return jsonify({'success': False, 'message': 'Unauthorized'}), 403
-    
+    if auth_check:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+
     student = current_user.student_profile
     data = request.json
-    
+
     if not data or 'frame' not in data or 'sample_num' not in data:
         return jsonify({'success': False, 'message': 'Invalid request parameters'}), 400
-        
+
     frame_b64 = data['frame']
     sample_num = data['sample_num']
-    
+
     try:
         # Decode base64 image
         if ',' in frame_b64:
             frame_b64 = frame_b64.split(',')[1]
-            
+
         img_bytes = base64.b64decode(frame_b64)
         nparr = np.frombuffer(img_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
+
         if img is None:
             return jsonify({'success': False, 'message': 'Failed to decode image'}), 400
-            
+
         # Save face sample
         face_service = get_face_rec_service()
         success, msg = face_service.save_face_sample(img, student.matric_number, sample_num)
-        
+
         if success:
             return jsonify({'success': True, 'message': f"Captured sample {sample_num}/100."})
-        else:
-            return jsonify({'success': False, 'message': msg})
-            
+        return jsonify({'success': False, 'message': msg})
+
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@student_bp.route('/register-face/batch-capture', methods=['POST'])
+@login_required
+def batch_capture():
+    """Receive multiple base64 frames and save each as a face sample."""
+    auth_check = check_student()
+    if auth_check:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+
+    student = current_user.student_profile
+    payload = request.json or {}
+    frames = payload.get('frames')
+
+    if not isinstance(frames, list) or len(frames) == 0:
+        return jsonify({'success': False, 'message': 'frames must be a non-empty array'}), 400
+
+    face_service = get_face_rec_service()
+    results = []
+
+    for item in frames:
+        frame_b64 = None
+        sample_num = None
+        if isinstance(item, dict):
+            frame_b64 = item.get('frame')
+            sample_num = item.get('sample_num')
+
+        if not frame_b64 or sample_num is None:
+            results.append({
+                'sample_num': sample_num,
+                'success': False,
+                'message': 'Invalid frame item'
+            })
+            continue
+
+        try:
+            if ',' in frame_b64:
+                frame_b64 = frame_b64.split(',')[1]
+
+            img_bytes = base64.b64decode(frame_b64)
+            nparr = np.frombuffer(img_bytes, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+            if img is None:
+                results.append({
+                    'sample_num': sample_num,
+                    'success': False,
+                    'message': 'Failed to decode image'
+                })
+                continue
+
+            success, msg = face_service.save_face_sample(img, student.matric_number, int(sample_num))
+            results.append({
+                'sample_num': sample_num,
+                'success': success,
+                'message': msg if not success else 'Saved'
+            })
+
+        except Exception as e:
+            results.append({
+                'sample_num': sample_num,
+                'success': False,
+                'message': str(e)
+            })
+
+    saved_count = sum(1 for r in results if r.get('success'))
+    return jsonify({'success': True, 'saved_count': saved_count, 'results': results})
+
 
 @student_bp.route('/register-face/train', methods=['POST'])
 @login_required

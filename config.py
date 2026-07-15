@@ -20,7 +20,13 @@ class Config:
     else:
         default_db_path = 'sqlite:///' + os.path.join(BASE_DIR, 'attendance.db')
         
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or default_db_path
+    db_uri = os.environ.get('DATABASE_URL')
+    if db_uri and db_uri.startswith('postgres://'):
+        db_uri = db_uri.replace('postgres://', 'postgresql+pg8000://', 1)
+    elif db_uri and db_uri.startswith('postgresql://'):
+        db_uri = db_uri.replace('postgresql://', 'postgresql+pg8000://', 1)
+        
+    SQLALCHEMY_DATABASE_URI = db_uri or default_db_path
 
     # Debug: resolved DB URI (helps diagnose "data not saving")
     # Printed at import-time; safe for local/dev.

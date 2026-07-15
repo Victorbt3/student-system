@@ -25,8 +25,8 @@ ADMIN_CREDENTIALS = {
     "username": "admin",
     "email": "admin@example.com",
     "password": "admin123",
-    "full_name": "Default Admin",
-    "employee_no": "ADM001",
+    "full_name": "Prof. Albert Einstein",
+    "employee_no": "EMP001",
     "phone_number": "0000000000",
 }
 

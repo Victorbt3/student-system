@@ -15,11 +15,13 @@ def login():
         role = request.form.get('role')
         remember = True if request.form.get('remember') else False
         
-        user = User.query.filter_by(username=username, role=role).first()
-        
+        user = User.query.filter_by(username=username).first()
         if not user or not user.check_password(password):
             flash('Invalid username or password for the selected role.', 'danger')
             return redirect(url_for('auth.login'))
+
+        if role and user.role != role:
+            flash(f'Logged in as {user.role.title()} using your account credentials.', 'info')
             
         login_user(user, remember=remember)
         return redirect_dashboard(user.role)

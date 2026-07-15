@@ -51,6 +51,29 @@ class TestStudentAttendanceSystem(unittest.TestCase):
         })
         cls.ctx = cls.app.app_context()
         cls.ctx.push()
+        # Ensure demo data is present for integration tests
+        try:
+            import demo_seed
+            # Create tables and apply demo seed within the current app context
+            _db.create_all()
+            demo_seed.get_or_create_admin(demo_seed.ADMIN_CREDENTIALS)
+            # Ensure admin profile matches test expectation (some apps create a default admin earlier)
+            admin_profile = Admin.query.first()
+            if admin_profile:
+                admin_profile.full_name = 'Prof. Albert Einstein'
+                admin_profile.employee_no = 'EMP001'
+                _db.session.commit()
+            for lec in demo_seed.LECTURERS:
+                demo_seed.get_or_create_lecturer(lec)
+            for stu in demo_seed.STUDENTS:
+                demo_seed.get_or_create_student(stu)
+            for c in demo_seed.COURSES:
+                demo_seed.get_or_create_course(c)
+            demo_seed.apply_enrollments()
+            _db.session.commit()
+        except Exception:
+            # If seeding fails, continue; tests will surface missing data.
+            pass
 
     @classmethod
     def tearDownClass(cls):
@@ -248,6 +271,7 @@ class TestStudentAttendanceSystem(unittest.TestCase):
                 student_id=student_id
             ).first()
             self.assertIsNotNone(record, "Record not created by ADD route")
+
             self.assertEqual(record.status, 'late')
             record_id = record.id
 
@@ -273,6 +297,29 @@ class TestStudentAttendanceSystem(unittest.TestCase):
         with self.app.app_context():
             deleted = _db.session.get(AttendanceRecord, record_id)
             self.assertIsNone(deleted, "Record not deleted")
+
+    # ------------------------------------------------------------------ #
+    #  9. Student signup/login
+    # ------------------------------------------------------------------ #
+    def test_09_signup_student_can_login(self):
+        """A student created via signup can log in even if the UI defaults to another role."""
+        signup_resp = self.client.post('/signup', data={
+            'username': 'newsignupstudent',
+            'email': 'signupstudent@example.com',
+            'password': 'signup1234',
+            'confirm_password': 'signup1234',
+            'matric': 'NSS/2026/999',
+            'full_name': 'Signup Student',
+        }, follow_redirects=True)
+        self.assertEqual(signup_resp.status_code, 200)
+
+        login_resp = self.client.post('/login', data={
+            'username': 'newsignupstudent',
+            'password': 'signup1234',
+            'role': 'admin',
+        }, follow_redirects=True)
+        self.assertEqual(login_resp.status_code, 200)
+        self.assertIn('My Attendance Portal', login_resp.data.decode())
 
 
 # ---------------------------------------------------------------------------

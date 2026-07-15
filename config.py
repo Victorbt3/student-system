@@ -1,5 +1,5 @@
 import os
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 class Config:
     # Flask app secret key
@@ -28,8 +28,16 @@ class Config:
         elif db_uri.startswith('postgresql://'):
             db_uri = db_uri.replace('postgresql://', 'postgresql+psycopg://', 1)
 
-        # Preserve SSL mode for psycopg; this is required by Supabase.
         parsed = urlparse(db_uri)
+        query_items = parse_qsl(parsed.query, keep_blank_values=True)
+        allowed_params = {
+            'sslmode', 'sslrootcert', 'sslcert', 'sslkey', 'sslcrl',
+            'connect_timeout', 'application_name', 'options'
+        }
+        filtered_query = urlencode(
+            [(key, value) for key, value in query_items if key in allowed_params]
+        )
+        parsed = parsed._replace(query=filtered_query)
         db_uri = urlunparse(parsed)
         
     SQLALCHEMY_DATABASE_URI = db_uri or default_db_path
